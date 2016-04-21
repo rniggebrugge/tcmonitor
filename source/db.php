@@ -1,107 +1,312 @@
 <?php
+/***************************************************************
+* db->create_type(type): creates empty folder for type
+* db->select(type , id, req1[] , req2[] , bool): selects assets
+* 		based type, id, two requirements array and a bool (true=AND, false=OR)
+*
+*
+*
+*
+*
+***************************************************************/
+
 class Database
 {
 	function __construct($path){
 		$this->filepath = $path;
 		$this->types = [];
+		$this->fields_a = [];
+		$this->fields_b = [];
 		$assets = scandir($path);
+		$full_index = [];
 		foreach($assets as $asset){
 			if(substr($asset,0,1)!=="." && is_dir($path.$asset)){
 				$this->types[]=$asset;
+				$this->fields_a[$asset] = [];
+				$this->fields_b[$asset] = [];
 			}
 		}
-		$this->active_id = 0;
-		$this->active_asset = "";
-		$this->fields_a = [];
-		$this->fields_b = [];
-		$this->search_results = [];
+		$this->schemas=[];
+		$this->read_schema();
+		$this->get_full_index();
 	}
 
 	function create_type($type){
 		if(in_array($type, $this->types)) return;
 		$test = mkdir($this->filepath.$type, 0777);
-		if ($test) $this->types[]=$type;
+		if ($test) {
+			$this->types[]=$type;
+			$this->fields_a[$type] = [];
+		} else {
+			echo "<h1>WARNING: COULD NOT CREATE FOLDER FOR $type!</h1>";
+		}
 	}
 
-	function select($type, $id = 0, $req1 = [], $req2 = []){
+	function select($type, $id = 0, $req1 = [], $req2 = [], $AND = true){
+		$search_results = [];
 		$id = (int)$id;
-		if(!in_array($type, $this->types)) return [];
-		if($id && !is_file($this->filepath.$type.'/'.$id.'_a.txt')) return [];
+		if(!in_array($type, $this->types)) return false;
+		if($id && !is_file($this->filepath.$type.'/'.$id.'_a.txt')) return false;
 		$files = scandir($this->filepath.$type.'/');
-		$this->search_results = [];
 		foreach($files as $file) if (preg_match('/('.($id?$id:'\d+').')_a/', $file, $matches)){
 			$s_id = $matches[1];
-			$lines = file($this->filepath.$type.'/'.$s_id.'_a.txt', FILE_IGNORE_NEW_LINES);
-			$this->search_results[$s_id] = [$lines[0], $lines[1]]; 
+			$lines_a = file($this->filepath.$type.'/'.$s_id.'_a.txt', FILE_IGNORE_NEW_LINES);
+			$lines_b = file($this->filepath.$type.'/'.$s_id.'_b.txt', FILE_IGNORE_NEW_LINES);
+			$m1 = $this->calculate_match_a($lines_a, $req1, $AND);
+			if ($AND && $m1==0) continue;
+			$m2 =  $this->calculate_match_b($lines_b, $req2, $AND);
+			if($AND && $m1 && $m2 || !$AND && ($m1 || $m2)){
+				$search_results[]=$s_id;
+				unset($this->fields_a[$type][$s_id]);
+				$this->fields_a[$type][$s_id]=[];
+				unset($this->fields_b[$type][$s_id]);
+				$this->fields_b[$type][$s_id]=[];
+				for($i=1;$i<count($lines_a);$i++) $this->fields_a[$type][$s_id][]=splitter($lines_a[$i]);
+				for($i=0;$i<count($lines_b);$i++) $this->fields_b[$type][$s_id][]=splitter($lines_b[$i]);
+			} 
 		}
-		$this->active_asset = $type;
-		$this->active_id = 0;
+		return $search_results;
+	}
+
+	function get_item($type, $id){
+		$result = [];
+		$id = (int)$id;
+		if(!$id || $id === 0) return $result;
+		if(!in_array($type, $this->types)) return $result;
+		if(!isset($this->fields_a[$type][$id])) {
+			$test = $this->select($type, $id);
+			if (!$test) return $result;
+		}
+		foreach($this->fields_a[$type][$id] as $field) $result[$field[0]]=$field[1];
+		foreach($this->fields_b[$type][$id] as $field) $result[$field[0]]=q_dec($field[1]);
+		return $result;
+	}
+
+	function calculate_match_a($lines, $requirements, $AND){
+		$m=0;
+		if (count($requirements)===0)return 1;
+		if(isset($requirements["title"])){
+			$parts = splitter($lines[1]);
+			if(strpos($parts[1], $requirements["title"])!==false) $m++;
+			else if ($AND)return 0;
+			unset($requirements["title"]);
+		}
+		for($i=2;$i<count($lines); $i++){
+			$parts = splitter($lines[$i]);
+			if(isset($requirements[$parts[0]])){
+				if($parts[1]===$requirements[$parts[0]]) $m++;
+				else if($AND)return 0;
+			}
+		}
+		return $m;
+	}
+
+	function calculate_match_b($lines, $requirements, $AND){
+		$m=0;
+		if (count($requirements)===0)return 1;
+		for($i=0;$i<count($lines); $i++){
+			$parts = splitter($lines[$i]);
+			if(isset($requirements[$parts[0]])){
+				if(strpos($parts[1],$requirements[$parts[0]])!==false) $m++;
+				else if($AND)return 0;
+			}
+		}
+		return $m;
 	}
 
 
-	function save_asset($asset, $id = 0, $fields_a = [], $fields_b = []){
-		if ((count($fields_a)+count($fields_b)) ===0) return false;
+	function save_asset($asset = "", $id = 0, $fields_a = [], $fields_b = []){
+		$id=(int)$id;
+		if(!$asset || $asset === "") return 0;
+		if($id>0 && !isset($this->fields_a[$asset][$id])) return 0;
+		if((!$id || $id === 0) && count($fields_a) === 0 ) return 0;
+		if($id && !is_file($this->filepath.$asset.'/'.$id.'_a.txt')) return 0;
+		if($id && count($fields_a) === 0 ) $fields_a = $this->fields_a[$asset][$id];
+		if($id && count($fields_b) === 0 ) $fields_b = $this->fields_b[$asset][$id];
 		if(!in_array($asset, $this->types)) $this->create_type($asset);
-		if($id && !is_file($this->filepath.$asset.'/'.$id.'_a.txt')) return false;
-		if(!$id) $id = count(scandir($this->filepath.$asset))/2;
+		if(!$id) $id = $this->next_id($asset);
 		file_put_contents($this->filepath.$asset.'/'.$id.'_a.txt',"Last update: ".date("Y-m-d-H-i-s")."\n");
 		foreach($fields_a as $field ){
 			file_put_contents(
 				$this->filepath.$asset.'/'.$id.'_a.txt', 
 				$field[0].'='.$field[1]."\n", FILE_APPEND | LOCK_EX);
 		}
-		file_put_contents($this->filepath.$asset.'/'.$id.'_b.txt',"");
-		foreach($fields_b as $field ){
-			file_put_contents(
-				$this->filepath.$asset.'/'.$id.'_b.txt', 
-				$field[0].'='.$field[1]."\n", FILE_APPEND | LOCK_EX);
+		if (count($fields_b)> 0){
+			file_put_contents($this->filepath.$asset.'/'.$id.'_b.txt',"");
+			foreach($fields_b as $field ){
+				file_put_contents(
+					$this->filepath.$asset.'/'.$id.'_b.txt', 
+					$field[0].'='.q_enc($field[1])."\n", FILE_APPEND | LOCK_EX);
+			}
 		}
-		return true;
+		return $id;
 	}
 
-	function load_asset($asset, $id){
-		$id=(int)$id;
-		if(!$id) return false;
-		if(!in_array($asset, $this->types)) return false;
-		if($id && !is_file($this->filepath.$asset.'/'.$id.'_a.txt')) return false;
-		if(!is_file($this->filepath.$asset.'/'.$id.'_a.txt')) return false;
-		if(!is_file($this->filepath.$asset.'/'.$id.'_b.txt')) return false;
-		$this->fields_a = [];
-		foreach(file($this->filepath.$asset.'/'.$id.'_a.txt', FILE_IGNORE_NEW_LINES) as $i=>$line)if($i){
-			$isPos = strpos($line, "=");
-			$this->fields_a[]=[substr($line, 0, $isPos), substr($line, $isPos+1)];
-		}
-		$this->fields_b = [];
-		foreach(file($this->filepath.$asset.'/'.$id.'_b.txt', FILE_IGNORE_NEW_LINES) as $i=>$line){
-			$isPos = strpos($line, "=");
-			$this->fields_a[]=[substr($line, 0, $isPos), substr($line, $isPos+1)];
-		}
-		$this->active_id = $id;
-		$this->active_asset = $asset;
+	function save_raw($asset, $text_a, $text_b){
+		if(!$asset || $asset === "") return 0;
+		if(!in_array($asset, $this->types)) $this->create_type($asset);
+		$id = $this->next_id($asset);
+		file_put_contents($this->filepath.$asset.'/'.$id.'_a.txt',"Last update: ".date("Y-m-d-H-i-s")."\n");
+		file_put_contents($this->filepath.$asset.'/'.$id.'_a.txt', $text_a , FILE_APPEND | LOCK_EX);
+		file_put_contents($this->filepath.$asset.'/'.$id.'_b.txt', $text_b);
+		$this->select($asset, $id);
 	}
+
+	function next_id($type){
+		$max = 99999;
+		$files = scandir($this->filepath.$type.'/');
+		foreach($files as $file) if (preg_match('/(\d+)_a/', $file, $matches)){
+			$sid = $matches[1];
+			if($sid>$max)$max=$sid;
+		}
+		$max++;
+		return $max;
+	}
+
+	function get_full_index(){
+		foreach($this->types as $type) {
+			$this->full_index[$type]=[];
+			$files = scandir($this->filepath.$type.'/');
+			foreach($files as $file) if (preg_match('/(\d+)_a/', $file, $matches)){
+				$temp = [];
+				$s_id = $matches[1];
+				$temp[]=$s_id;
+				$lines = file($this->filepath.$type.'/'.$s_id.'_a.txt', FILE_IGNORE_NEW_LINES);
+				$temp[]=$lines[0];
+				$parts = splitter($lines[1]);
+				$temp[]=$parts[1];
+				$this->full_index[$type][]=$temp;
+			}	
+		}
+	}
+
+	function read_schema(){
+		$lines = file($this->filepath.'__schema', FILE_IGNORE_NEW_LINES);
+		$type="";
+		$fields="A";
+		$temp = [];
+		foreach($lines as $line) {
+			$line = trim($line);
+			if(substr($line,0,3)=="***"){
+				if($type!=="")$this->schemas[$type]=$temp; 
+				$type=substr($line,3);
+				if(!in_array($type, $this->types)) $this->create_type($type);
+				$fields="A";
+				$temp = [];
+				$temp["fields_a"]=[];
+				$temp["fields_b"]=[]; 
+			}
+			else if(substr($line,0,3)=="---")$fields="B";
+			else if(!$line || $line === "") continue;
+			else {
+				if($fields=="A")$temp["fields_a"][]=$line;
+				else $temp["fields_b"][]=$line;
+			}
+		}
+		$this->schemas[$type]=$temp;
+	}
+
+	function edit_form($type, $id=0){
+		if(!in_array($type, $this->types)) $this->create_type($asset);
+		if(!isset($this->schemas[$type]))return;
+		$item = $this->get_item($type, $id);
+		$s = $this->schemas[$type];
+		echo "<form method='POST'><table>";
+		echo "<tr><td colspan=2><h2>Edit $type</h2></td></tr>";
+		foreach($s["fields_a"] as $field){
+			$parts = explode("|", $field);
+			echo "<tr><td>".$parts[0]."</td><td>";
+			echo $this->add_edit_field($parts, isset($item[$parts[0]])?$item[$parts[0]]:"");
+			echo "</td></tr>";
+		}
+		echo "<tr><td colspan=2><hr></td></tr>";
+		foreach($s["fields_b"] as $field){
+			$parts = explode("|", $field);
+			echo "<tr><td>".$parts[0]."</td><td>";
+			echo $this->add_edit_field($parts, isset($item[$parts[0]])?$item[$parts[0]]:"");
+			echo "</td></tr>";
+		}
+		echo "<tr><td colspan=2><hr></td></tr>";
+		echo "<tr><td>&nbsp;</td><td><input type=submit value=save></td></tr>";
+		echo "</table></form>";
+	}
+
+	function add_edit_field($parts, $value=""){
+		$name = $parts[0];
+		$specs = "";
+		if(count($parts)>1) $specs = $parts[1];
+		if(!$name || $name === "") return "x";
+		if (!$specs || $specs ==="") return "<input type=text size=95 name='$name' value='$value'>";
+		if ($specs=="textarea") return "<textarea name='$name' rows=8 cols=100>$value</textarea>";
+		if ($specs=="checkbox") return "<input type=checkbox name='$name' id='cb_$name' ".($value==1?"checked":"")."><label for='cb_$name'>$name</label>";
+		else {
+			if(!isset($this->full_index[$specs]))return "--?--";
+			$txt="<select name='$name'>";
+			$items = $this->full_index[$specs];
+			usort($items, "cmp2");
+			foreach($items as $item){
+				$txt.="<option value='".$item[0]."' ".($item[0]===$value?"selected":"").">".$item[2]."</option>";
+			}
+			$txt.="</select>";
+			return $txt;
+		}
+	}
+
 /// TEST FUNCTIONS ---\/--------------
-	function show_active_asset(){
-		echo "<div style='background:#000; border:3px solid #009; padding:10px; margin:10px; color:#fff'>";
-		echo $this->active_asset." - ".$this->active_id."<br>";
-		foreach($this->fields_a as $field){
-			echo "<b>".$field[0]." : </b>".$field[1]."<br>";
+	function show_active_assets(){
+		foreach($this->fields_a as $asset_type=>$assets)if(count($assets)>0){
+			foreach($assets as $id=>$fields_a){
+				echo "<div style='background:#000; border:3px solid #009; padding:10px; margin:10px; color:#fff'>";
+				echo $asset_type." / ".$id."<br>";
+				foreach($fields_a as $field){
+					echo "<b>".$field[0]." : </b>".$field[1]."<br>";
+				}
+				foreach($this->fields_b[$asset_type][$id] as $field){
+					echo "<b>".$field[0]." : </b>".$field[1]."<br>";
+				}
+				echo "</div>";
+			}
 		}
-		foreach($this->fields_b as $field){
-			echo "<b>".$field[0]." : </b>".$field[1]."<br>";
-		}
-		echo "</div>";
 	}
 
-	function show_search_results(){
-		echo "<div style='background:#000; border:3px solid #009; padding:10px; margin:10px; color:#fff'>";
-		echo $this->active_asset."<br>";
-		echo "<table style=color:white><tr><td>Id</td><td>Item</td><td>Last update</td></tr>";
-		foreach($this->search_results as $id=>$item){
-			echo "<tr><td>$id</td><td>".$item[1]."</td><td>".$item[0]."</td></tr>";
+	function show_all(){
+		
+		$this->get_full_index();
+		echo "<table>";
+		foreach($this->types as $type){
+			echo "<tr><td colspan=3><h2>$type</h2></td></tr>";
+			$items = $this->full_index[$type];
+			usort($items, "cmp2");
+			foreach($items as $item){
+				echo "<tr><td>".$item[0]."</td><td>".$item[1]."</td><td>".$item[2]."</td></tr>";
+			}
 		}
 		echo "</table>";
-		echo "</div>";		
 	}
-
-
 }
+
+// Helper function that could also be used by other classes
+function cmp2($a, $b){
+	if($a[2] === $b[2]) return 0;
+	return $a[2]<$b[2]?-1:1;
+}
+function cmp1($a, $b){
+	if($a[1] === $b[1]) return 0;
+	return $a[1]<$b[1]?-1:1;
+}
+function cmp0($a, $b){
+	if($a[0] === $b[0]) return 0;
+	return $a[0]<$b[0]?-1:1;
+}
+function splitter($line, $separator="="){
+	$isPos = strpos($line, $separator);
+	return [substr($line, 0, $isPos), substr($line, $isPos+1)];
+}
+function q_enc($t){
+	return urlencode($t);
+}
+function q_dec($t){
+	return stripslashes(urldecode($t));
+}
+
+

@@ -1,3 +1,6 @@
 a { color:#009; text-decoration:none}
 a:hover { text-decoration:underline; color:#09f;}
 a.topactive { background:#050; color:#fff}
+
+table { border-collapse: collapse; }
+table td { padding:3px 10px; border:1px solid #090; vertical-align: top; font-family: Arial}

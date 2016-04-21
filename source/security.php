@@ -1,13 +1,19 @@
 <?php
 // logging in
 if (POST) {
-	if (isset($p["username"]) && $p["username"]=="r" && isset($p["password"]) && $p["password"]=="n" && (TIME-(int)$p["s"])<30){
-		$_SESSION["authorization"]=1;
-		$authLevel=1;
-		$user_country=0;
-	} else if(isset($p["country"])) {
-		$country=(int)$p["country"];
-		$_SESSION["country"]=$country;
+	if (isset($p["username"]) && isset($p["password"]) && (TIME-(int)$p["s"])<30) {
+		if($p["username"]=="tc" && $p["password"]=="n" ){
+			$_SESSION["authorization"]=1;
+			$authLevel=1;
+			$user_country=0;
+		} else if($p["username"]=="remco" && $p["password"]=="n" ){
+			$_SESSION["authorization"]=10;
+			$authLevel=10;
+			$user_country=0;
+		} 
+	}	else if(isset($p["select_country"])) {
+			$country=(int)$p["select_country"];
+			$_SESSION["country"]=$country;
 	}
 }
 
@@ -25,7 +31,7 @@ if ( (int)$_SESSION["authorization"]<1 ){
 } else if ($country<1){
 	$country = 0;
 	echo "<form method='POST' action='/monitor/'>
-		Country: <select name='country'><option value=1>Belgium</option>
+		Country: <select name='select_country'><option value=1>Belgium</option>
 			<option value=2>Germany</option>
 		<input type='submit' value='choose'></form>";
 } 

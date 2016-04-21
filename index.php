@@ -13,14 +13,6 @@ session_start();
 // connect to database
         require("./source/db.php");
         $db = new Database($_SERVER["DOCUMENT_ROOT"]."/tcmonitor/database/");
-        for($i=1; $i<3; $i++){
-                $db->load_asset('country', $i);
-        // $db->save_asset('country', 0, $db->fields_a, $db->fields_b);
-                $db->show_active_asset();
-        }
-
-        $db->select("country");
-        $db->show_search_results();
 
 // initialize page
         $authLevel = 0;
@@ -39,11 +31,23 @@ session_start();
         require("./source/security.php");
         if ($authLevel>0 && $country>0) {
                 require("./html/top_navigation.php");
+        // router for authorized visitors
+                switch (SHORTURI) {
+                        case "./admintool": if ($authLevel<10) break;
+                                require("./modules/admintool.php");
+                                break;
+                } 
         }
+
+
+
+        $a = $db->select("message");
+        foreach ($a as $id){
+                $item = $db->edit_form("message", $id);
+                print_r($item);
+        } 
 	require("./html/foot.php");
 
-
-echo URI.' / '.SHORTURI;
 ?>
 
 
