@@ -1,6 +1,16 @@
+body { background: #9cf}
 a { color:#009; text-decoration:none}
-a:hover { text-decoration:underline; color:#09f;}
-a.topactive { background:#050; color:#fff}
+a:hover { text-decoration:underline; color:#00c;}
+a.topactive { background:#009; color:#9cf; text-decoration: none;}
 
 table { border-collapse: collapse; }
-table td { padding:3px 10px; border:1px solid #090; vertical-align: top; font-family: Arial}
+table td { padding:4px 10px; border:1px solid #06d; vertical-align: top; font-family: Arial;
+ font-size:13px; background: #fff}
+table td.header { background:#006; color:#9cf; font-size: 14px; padding:4px 10px;}
+
+div.header { background:#006; color:#9cf; cursor: pointer; margin:20px 0 10px; padding:4px 10px;}
+div.header input { margin:4px 10px 4px 10px;}
+
+#mask_all {
+	position:fixed; top:0; bottom:0; left:0; right:0; background-color:rgba(0,0,0,.7); display: none; 
+}

@@ -30,10 +30,11 @@ if ( (int)$_SESSION["authorization"]<1 ){
 		</table></form>";
 } else if ($country<1){
 	$country = 0;
+	$countries = $db->get_list("country");
 	echo "<form method='POST' action='/monitor/'>
-		Country: <select name='select_country'><option value=1>Belgium</option>
-			<option value=2>Germany</option>
-		<input type='submit' value='choose'></form>";
+		Country: <select name='select_country'>";
+	foreach($countries as $id=>$label) echo "<option value='$id'>$label</option>";
+	echo "</select> > <input type='submit' value='choose'></form>";
 } 
 
 	

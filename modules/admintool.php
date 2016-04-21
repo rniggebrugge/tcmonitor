@@ -1,18 +1,40 @@
 <?php
-if (POST){
-	$db->save_raw($p["type"], $p["fields_a"], $p["fields_b"]);
+$db->load_full_index();
+foreach($db->types as $type) {
+	$list = $db->get_list($type);
+	$n=count($list);
+	echo "<div class='header' block='$type'><input type='button' value='new' block='$type'><b>$type </b>($n items)</div>";
+	echo "<div id='block_$type' style='display:none'><table>";
+	foreach($list as $item_id=>$item_title) {
+		echo 	"<tr><td>$item_id</td><td>$item_title</td><td>
+				<input type='button' value='edit' item_id='$item_id' asset='$type'></td><tr>";
+	}
+	echo "</table></div>";
+	echo "<div id='mask_all'></div><iframe frameborder='0' hspace='0' id='edit_iframe' style='width:930px; height:662px; 
+		position:fixed; left:50%; top:50%; margin-left:-465px; margin-top:-350px; display:none'></iframe>";
 }
 
 ?>
-<h1>Very, very raw input!</h1>
-<form method="POST">
-<table style="border:1px solid #999; border-collapse:collapse">
-<tr><td>Asset type:</td><td><select name="type"><?php
-	foreach($db->types as $type) echo "<option value='$type'>$type</option>";
-?></select>
-</td></tr>
-<tr><td>Fields A:</td><td><textarea name="fields_a" rows="6" cols="100"></textarea></td></tr>
-<tr><td>Fields B:</td><td><textarea name="fields_b" rows="15" cols="100"></textarea></td></tr>
-<tr><td>&nbsp;</td><td><input type=submit value="create"></td></tr>
-</table>
-</form>
+<script>
+$(function(){
+	$("div[block]").click(function(){
+		var type = $(this).attr("block");
+		$("#block_"+type).toggle();
+	});
+	$("div[block] input").click(function(){
+		var type = $(this).attr("block");
+		edit_item(type, 0);
+		return false;
+	});
+	$("input[item_id]").click(function(){
+		var type = $(this).attr("asset"), id = $(this).attr("item_id");
+		edit_item(type, id);
+		return false;
+	});
+
+	function edit_item(type, id){
+		$("#mask_all").show();
+		$("#edit_iframe").show().attr("src", "/tcmonitor/edit_form.php?type="+type+"&id="+id);
+	}
+});
+</script>

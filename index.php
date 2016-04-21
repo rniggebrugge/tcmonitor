@@ -16,7 +16,7 @@ session_start();
 
 // initialize page
         $authLevel = 0;
-        $country = 0;
+        $country = 0; 
         $page_title = "TC interact";
         if (URI == "/monitor/logout" || !isset($_SESSION["authorization"]) || (int)$_SESSION["authorization"]<1){
                 $_SESSION["authorization"]=0;
@@ -26,7 +26,7 @@ session_start();
 		$country = (int)$_SESSION["country"];
         }
 
-// output to browser
+// output to browser 
         require("./html/head.php");
         require("./source/security.php");
         if ($authLevel>0 && $country>0) {
@@ -41,11 +41,21 @@ session_start();
 
 
 
-        $a = $db->select("message");
-        foreach ($a as $id){
-                $item = $db->edit_form("message", $id);
-                print_r($item);
-        } 
+
+
+        // if(POST && isset($p["edit_form"])){
+        //         $saved_id = $db->save_from_form();
+        //         if($saved_id) echo "<div style='background:#009; color:#fff'>Successfully saved $saved_id.</div>";
+        //         else echo "<div style='background:#900; color:#fff'>Problem saving!</div>";
+        // }
+        // $a = $db->select("message");
+        // foreach ($db->last_ids() as $id){
+        //         $item = $db->edit_form("message", $id);
+        //         print_r($item);
+        // } 
+
+
+
 	require("./html/foot.php");
 
 ?>

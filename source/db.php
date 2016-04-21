@@ -28,7 +28,7 @@ class Database
 		}
 		$this->schemas=[];
 		$this->read_schema();
-		$this->get_full_index();
+		$this->last_search_result_ids = [];
 	}
 
 	function create_type($type){
@@ -65,7 +65,12 @@ class Database
 				for($i=0;$i<count($lines_b);$i++) $this->fields_b[$type][$s_id][]=splitter($lines_b[$i]);
 			} 
 		}
-		return $search_results;
+		$this->last_search_result_ids = $search_results;
+		return count($search_results);
+	}
+
+	function last_ids(){
+		return $this->last_search_result_ids;
 	}
 
 	function get_item($type, $id){
@@ -163,8 +168,10 @@ class Database
 		return $max;
 	}
 
-	function get_full_index(){
-		foreach($this->types as $type) {
+	function load_full_index($types = []){
+		if (!$types || count($types)===0) $types=$this->types;
+		foreach($types as $type) if(in_array($type, $this->types)){
+			if(isset($this->full_index[$type]))continue;
 			$this->full_index[$type]=[];
 			$files = scandir($this->filepath.$type.'/');
 			foreach($files as $file) if (preg_match('/(\d+)_a/', $file, $matches)){
@@ -178,6 +185,20 @@ class Database
 				$this->full_index[$type][]=$temp;
 			}	
 		}
+	}
+
+	function full_index_exists($type){
+		return isset($this->full_index[$type]);
+	}
+
+	function get_list($type){
+		if(!in_array($type,$this->types)) return false;
+		if(!$this->full_index_exists($type))$this->load_full_index([$type]);
+		$result=[];
+		$items = $this->full_index[$type];
+		usort($items, "cmp2");
+		foreach($items as $item) $result[$item[0]]=$item[2];
+		return $result;
 	}
 
 	function read_schema(){
@@ -207,28 +228,70 @@ class Database
 	}
 
 	function edit_form($type, $id=0){
-		if(!in_array($type, $this->types)) $this->create_type($asset);
 		if(!isset($this->schemas[$type]))return;
-		$item = $this->get_item($type, $id);
+		if(!in_array($type, $this->types)) $this->create_type($asset);
 		$s = $this->schemas[$type];
+		$item = $this->get_item($type, $id);
+		if(count($item)===0){
+			$id = 0;
+			$title = "new $type";
+		} else {
+			$f = $s["fields_a"][0];
+			$title = $item[$f];
+		}
 		echo "<form method='POST'><table>";
-		echo "<tr><td colspan=2><h2>Edit $type</h2></td></tr>";
+		echo "<input type='hidden' value='$id' name='id'>";
+		echo "<input type='hidden' name='type' value='$type'>";
+		echo "<input type='hidden' name='edit_form' value='save'>";
+		echo "<tr><td colspan=2 class=header><b>$title </b>($type  <u style=''>$id</u>)</td></tr>";
 		foreach($s["fields_a"] as $field){
 			$parts = explode("|", $field);
 			echo "<tr><td>".$parts[0]."</td><td>";
 			echo $this->add_edit_field($parts, isset($item[$parts[0]])?$item[$parts[0]]:"");
 			echo "</td></tr>";
 		}
-		echo "<tr><td colspan=2><hr></td></tr>";
 		foreach($s["fields_b"] as $field){
 			$parts = explode("|", $field);
 			echo "<tr><td>".$parts[0]."</td><td>";
 			echo $this->add_edit_field($parts, isset($item[$parts[0]])?$item[$parts[0]]:"");
 			echo "</td></tr>";
 		}
-		echo "<tr><td colspan=2><hr></td></tr>";
-		echo "<tr><td>&nbsp;</td><td><input type=submit value=save></td></tr>";
+		echo "<tr><td>&nbsp;</td><td><input type=submit value=save>";
+		echo "<input type=button value=cancel end_action='close'></td></tr>";
 		echo "</table></form>";
+	}
+
+	function save_from_form(){
+		if(!POST)return false;
+		$p=$_POST;
+		if(!isset($p["id"]) || !isset($p["type"]) || !$p["type"])return false;
+		$type=$p["type"];
+		if(!isset($this->schemas[$type]))return false;
+		$id=(int)$p["id"];
+		if(!$id) $id = $this->next_id($type);
+		if(!in_array($type, $this->types)) $this->create_type($asset);
+
+		$s = $this->schemas[$type];
+
+		$text_a = "Last update: ".date("Y-m-d-H-i-s")."\n";
+		$text_b = "";
+		foreach($s["fields_a"] as $field){
+			$parts= explode("|", $field);
+			$text_a .= $parts[0]."=";
+			if(isset($parts[1]) && $parts[1]=="checkbox") $value=isset($p[$parts[0]])?1:0;
+			else $value=$p[$parts[0]];
+			$text_a .= $value."\n";
+		}
+		foreach($s["fields_b"] as $field){
+			$parts= explode("|", $field);
+			$text_b .= $parts[0]."=";
+			if(isset($parts[1]) && $parts[1]=="checkbox") $value=isset($p[$parts[0]])?1:0;
+			else $value=$p[$parts[0]];
+			$text_b .= q_enc($value)."\n";
+		}
+		file_put_contents($this->filepath.$type.'/'.$id.'_a.txt', $text_a);
+		file_put_contents($this->filepath.$type.'/'.$id.'_b.txt', $text_b);
+		return $id;
 	}
 
 	function add_edit_field($parts, $value=""){
@@ -237,10 +300,11 @@ class Database
 		if(count($parts)>1) $specs = $parts[1];
 		if(!$name || $name === "") return "x";
 		if (!$specs || $specs ==="") return "<input type=text size=95 name='$name' value='$value'>";
+		if ($specs =="date") return "<input type=date size=15 name='$name' value='$value'>";
 		if ($specs=="textarea") return "<textarea name='$name' rows=8 cols=100>$value</textarea>";
 		if ($specs=="checkbox") return "<input type=checkbox name='$name' id='cb_$name' ".($value==1?"checked":"")."><label for='cb_$name'>$name</label>";
 		else {
-			if(!isset($this->full_index[$specs]))return "--?--";
+			if(!$this->full_index_exists($specs)) $this->load_full_index([$specs]);
 			$txt="<select name='$name'>";
 			$items = $this->full_index[$specs];
 			usort($items, "cmp2");
@@ -270,8 +334,7 @@ class Database
 	}
 
 	function show_all(){
-		
-		$this->get_full_index();
+		$this->load_full_index();
 		echo "<table>";
 		foreach($this->types as $type){
 			echo "<tr><td colspan=3><h2>$type</h2></td></tr>";
