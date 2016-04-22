@@ -32,6 +32,9 @@ $id = isset($_GET["id"])?(int)$_GET["id"]:0;
 			<meta name="viewport" content="width=device-width, initial-scale=1.0">
 			<script type="text/javascript" src="/tcmonitor/scripts/jquery-1.12.3.min.js"></script>
 			<style>html, body { background:#666; color:#fff }
+			* {font-family:Arial; font-size:14px;}
+			input, textarea {font-size:14px; color:#039}
+			td { vertical-align:top}
 			</style><title>Edit Form</title></head>
 			<body>';
 		$db->edit_form($type, $id); 

@@ -42,10 +42,20 @@ class Database
 		}
 	}
 
+	function is_type($type){
+		return in_array($type, $this->types);
+	}
+
+	function item_exists($type, $id){
+		$id=(int)$id;
+		if(!$id || !$type || !$this->is_type($type))return false;
+		return is_file($this->filepath.$type.'/'.$id.'_a.txt');
+	}
+
 	function select($type, $id = 0, $req1 = [], $req2 = [], $AND = true){
 		$search_results = [];
 		$id = (int)$id;
-		if(!in_array($type, $this->types)) return false;
+		if(!$this->is_type($type)) return false;
 		if($id && !is_file($this->filepath.$type.'/'.$id.'_a.txt')) return false;
 		$files = scandir($this->filepath.$type.'/');
 		foreach($files as $file) if (preg_match('/('.($id?$id:'\d+').')_a/', $file, $matches)){
@@ -147,10 +157,13 @@ class Database
 		return $id;
 	}
 
-	function save_raw($asset, $text_a, $text_b){
+	function save_raw($asset, $text_a, $text_b, $id = 0){
+		$id=(int)$id;
 		if(!$asset || $asset === "") return 0;
+		$text_a = $this->encode_line_breaks($text_a);
+		$text_b = $this->encode_line_breaks($text_b);
 		if(!in_array($asset, $this->types)) $this->create_type($asset);
-		$id = $this->next_id($asset);
+		if(!$id) $id = $this->next_id($asset);
 		file_put_contents($this->filepath.$asset.'/'.$id.'_a.txt',"Last update: ".date("Y-m-d-H-i-s")."\n");
 		file_put_contents($this->filepath.$asset.'/'.$id.'_a.txt', $text_a , FILE_APPEND | LOCK_EX);
 		file_put_contents($this->filepath.$asset.'/'.$id.'_b.txt', $text_b);
@@ -244,19 +257,21 @@ class Database
 		echo "<input type='hidden' name='type' value='$type'>";
 		echo "<input type='hidden' name='edit_form' value='save'>";
 		echo "<tr><td colspan=2 class=header><b>$title </b>($type  <u style=''>$id</u>)</td></tr>";
+		echo "<tr><td colspan=2><hr></td></tr>";
 		foreach($s["fields_a"] as $field){
 			$parts = explode("|", $field);
 			echo "<tr><td>".$parts[0]."</td><td>";
 			echo $this->add_edit_field($parts, isset($item[$parts[0]])?$item[$parts[0]]:"");
 			echo "</td></tr>";
 		}
+		echo "<tr><td colspan=2><hr></td></tr>";
 		foreach($s["fields_b"] as $field){
 			$parts = explode("|", $field);
 			echo "<tr><td>".$parts[0]."</td><td>";
 			echo $this->add_edit_field($parts, isset($item[$parts[0]])?$item[$parts[0]]:"");
 			echo "</td></tr>";
 		}
-		echo "<tr><td>&nbsp;</td><td><input type=submit value=save>";
+		echo "<tr><td>&nbsp;</td><td><input type=submit value=save end_action='close'> | ";
 		echo "<input type=button value=cancel end_action='close'></td></tr>";
 		echo "</table></form>";
 	}
@@ -316,6 +331,17 @@ class Database
 		}
 	}
 
+function encode_line_breaks($text){
+	$pattern = '/^[^=]*$/m';
+	while(preg_match($pattern, $text, $matches)){
+		foreach($matches as $i=>$m){ 
+			$text = str_replace("\r\n$m", urlencode("\n").$m, $text);
+			$text = str_replace("\n$m", urlencode("\n").$m, $text);
+		}
+	}
+	return $text;
+}
+
 /// TEST FUNCTIONS ---\/--------------
 	function show_active_assets(){
 		foreach($this->fields_a as $asset_type=>$assets)if(count($assets)>0){
@@ -361,6 +387,10 @@ function cmp0($a, $b){
 	if($a[0] === $b[0]) return 0;
 	return $a[0]<$b[0]?-1:1;
 }
+function compare($a, $b){
+	if ($a[0][1]==$b[0][1]) return 0;
+	return $a[0][1]<$b[0][1]?-1:1;
+}
 function splitter($line, $separator="="){
 	$isPos = strpos($line, $separator);
 	return [substr($line, 0, $isPos), substr($line, $isPos+1)];
@@ -371,5 +401,4 @@ function q_enc($t){
 function q_dec($t){
 	return stripslashes(urldecode($t));
 }
-
 

@@ -14,7 +14,8 @@ remark|textarea
 ***country
 title
 flag
-
+-----
+general_situation|textarea
 
 
 ***legal_instrument

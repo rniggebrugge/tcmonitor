@@ -1,1 +1,2 @@
-message=this+is+a+short+message%21%0D%0ASo+what%3F
+message=this is a short message!
+So what?
