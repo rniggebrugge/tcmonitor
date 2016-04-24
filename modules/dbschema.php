@@ -1,4 +1,10 @@
 <?php
+if ($authLevel<10) die();
+
+if(isset($p["schema"]) && $p["schema"]){
+	file_put_contents($db->filepath.'__schema', $p["schema"]);
+}
+
 $lines = file($db->filepath.'__schema', FILE_IGNORE_NEW_LINES);
 ?>
 <form method="POST">

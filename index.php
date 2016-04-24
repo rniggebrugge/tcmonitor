@@ -1,5 +1,7 @@
 <?php
 session_start();
+// require help file
+        require("./source/functions.php");
 
 // details of request
         define("URI", $_SERVER["REQUEST_URI"]);
@@ -42,6 +44,8 @@ session_start();
                         case "./dbschema": if ($authLevel<10) break;
                                 require("./modules/dbschema.php");
                                 break;
+                        default:
+                                echo get_text_block("homepage", $db);              
                 } 
         }
 

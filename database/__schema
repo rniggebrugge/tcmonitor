@@ -47,3 +47,9 @@ national_legislation_label|textarea
 national_legislation_url
 remark|textarea
 implementation_date|date
+
+
+***website_text
+title
+---
+text|textarea

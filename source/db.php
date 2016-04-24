@@ -92,11 +92,16 @@ class Database
 	}
 
 	function sort_results($field = "title", $asc = true, $strCmp = true){
+		if ($field=="id"){
+			if ($asc) ksort($this->last_results);
+			else krsort($this->last_results);
+		} else {
 		uasort($this->last_results, function($a, $b) use ($field, $asc, $strCmp){
-			$v1 = isset($a[$field])?$a[$field]:($strCmp?"":0);
-			$v2 = isset($b[$field])?$b[$field]:($strCmp?"":0);
-			return ($strCmp?strcmp($v1,$v2):$v1-$v2)*($asc?1:-1);
-		});
+				$v1 = isset($a[$field])?$a[$field]:($strCmp?"":0);
+				$v2 = isset($b[$field])?$b[$field]:($strCmp?"":0);
+				return ($strCmp?strcmp($v1,$v2):$v1-$v2)*($asc?1:-1);
+			});
+		}
 	}
 
 
@@ -123,7 +128,7 @@ class Database
 		for($i=2;$i<count($lines); $i++){
 			$parts = splitter($lines[$i]);
 			if(isset($requirements[$parts[0]])){
-				if($parts[1]===$requirements[$parts[0]]) $m++;
+				if($parts[1]==$requirements[$parts[0]]) $m++; 
 				else if($AND)return 0;
 			}
 		}
@@ -397,18 +402,6 @@ function encode_line_breaks($text){
 function cmp2($a, $b){
 	if($a[2] === $b[2]) return 0;
 	return $a[2]<$b[2]?-1:1;
-}
-function cmp1($a, $b){
-	if($a[1] === $b[1]) return 0;
-	return $a[1]<$b[1]?-1:1;
-}
-function cmp0($a, $b){
-	if($a[0] === $b[0]) return 0;
-	return $a[0]<$b[0]?-1:1;
-}
-function compare($a, $b){
-	if ($a[0][1]==$b[0][1]) return 0;
-	return $a[0][1]<$b[0][1]?-1:1;
 }
 function splitter($line, $separator="="){
 	$isPos = strpos($line, $separator);
