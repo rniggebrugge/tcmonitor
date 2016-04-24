@@ -1,2 +1,2 @@
-message=this is a short message!
-So what?
+message=this+is+a+short+message%21%21%40%21%40
+posted=2016-04-07

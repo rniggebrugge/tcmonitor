@@ -27,8 +27,9 @@ class Database
 			}
 		}
 		$this->schemas=[];
+		$this->first_field_b = [];
 		$this->read_schema();
-		$this->last_search_result_ids = [];
+		$this->last_results = [];
 	}
 
 	function create_type($type){
@@ -53,11 +54,12 @@ class Database
 	}
 
 	function select($type, $id = 0, $req1 = [], $req2 = [], $AND = true){
-		$search_results = [];
+		$this->last_results = [];
 		$id = (int)$id;
 		if(!$this->is_type($type)) return false;
-		if($id && !is_file($this->filepath.$type.'/'.$id.'_a.txt')) return false;
+		if($id && !$this->item_exists($type, $id)) return false;
 		$files = scandir($this->filepath.$type.'/');
+		$count = 0;
 		foreach($files as $file) if (preg_match('/('.($id?$id:'\d+').')_a/', $file, $matches)){
 			$s_id = $matches[1];
 			$lines_a = file($this->filepath.$type.'/'.$s_id.'_a.txt', FILE_IGNORE_NEW_LINES);
@@ -66,35 +68,47 @@ class Database
 			if ($AND && $m1==0) continue;
 			$m2 =  $this->calculate_match_b($lines_b, $req2, $AND);
 			if($AND && $m1 && $m2 || !$AND && ($m1 || $m2)){
-				$search_results[]=$s_id;
+				$count ++;
 				unset($this->fields_a[$type][$s_id]);
 				$this->fields_a[$type][$s_id]=[];
 				unset($this->fields_b[$type][$s_id]);
 				$this->fields_b[$type][$s_id]=[];
-				for($i=1;$i<count($lines_a);$i++) $this->fields_a[$type][$s_id][]=splitter($lines_a[$i]);
-				for($i=0;$i<count($lines_b);$i++) $this->fields_b[$type][$s_id][]=splitter($lines_b[$i]);
+				for($i=1;$i<count($lines_a);$i++) {
+					$temp = splitter($lines_a[$i]);
+					$this->fields_a[$type][$s_id][$temp[0]]=$temp[1];
+				}
+				for($i=0;$i<count($lines_b);$i++) {
+					$temp  = splitter($lines_b[$i]);
+					$this->fields_b[$type][$s_id][$temp[0]]=q_dec($temp[1]);
+				}
+				$this->last_results[$s_id]=array_merge($this->fields_a[$type][$s_id], $this->fields_b[$type][$s_id]);
 			} 
 		}
-		$this->last_search_result_ids = $search_results;
-		return count($search_results);
+		return $count;
 	}
 
-	function last_ids(){
-		return $this->last_search_result_ids;
+	function get_results(){
+		return $this->last_results;
 	}
+
+	function sort_results($field = "title", $asc = true, $strCmp = true){
+		uasort($this->last_results, function($a, $b) use ($field, $asc, $strCmp){
+			$v1 = isset($a[$field])?$a[$field]:($strCmp?"":0);
+			$v2 = isset($b[$field])?$b[$field]:($strCmp?"":0);
+			return ($strCmp?strcmp($v1,$v2):$v1-$v2)*($asc?1:-1);
+		});
+	}
+
 
 	function get_item($type, $id){
-		$result = [];
 		$id = (int)$id;
-		if(!$id || $id === 0) return $result;
-		if(!in_array($type, $this->types)) return $result;
+		if(!$id || $id === 0) return false;
+		if(!in_array($type, $this->types)) return false;
 		if(!isset($this->fields_a[$type][$id])) {
 			$test = $this->select($type, $id);
-			if (!$test) return $result;
+			if (!$test || $test === 0) return [];
 		}
-		foreach($this->fields_a[$type][$id] as $field) $result[$field[0]]=$field[1];
-		foreach($this->fields_b[$type][$id] as $field) $result[$field[0]]=q_dec($field[1]);
-		return $result;
+		return $this->last_results[$id];
 	}
 
 	function calculate_match_a($lines, $requirements, $AND){
@@ -141,17 +155,17 @@ class Database
 		if(!in_array($asset, $this->types)) $this->create_type($asset);
 		if(!$id) $id = $this->next_id($asset);
 		file_put_contents($this->filepath.$asset.'/'.$id.'_a.txt',"Last update: ".date("Y-m-d-H-i-s")."\n");
-		foreach($fields_a as $field ){
+		foreach($fields_a as $key=>$value ){
 			file_put_contents(
 				$this->filepath.$asset.'/'.$id.'_a.txt', 
-				$field[0].'='.$field[1]."\n", FILE_APPEND | LOCK_EX);
+				$key.'='.$value."\n", FILE_APPEND | LOCK_EX);
 		}
 		if (count($fields_b)> 0){
 			file_put_contents($this->filepath.$asset.'/'.$id.'_b.txt',"");
-			foreach($fields_b as $field ){
+			foreach($fields_b as $key=>$value ){
 				file_put_contents(
 					$this->filepath.$asset.'/'.$id.'_b.txt', 
-					$field[0].'='.q_enc($field[1])."\n", FILE_APPEND | LOCK_EX);
+					$key.'='.q_enc($value)."\n", FILE_APPEND | LOCK_EX);
 			}
 		}
 		return $id;
@@ -219,6 +233,7 @@ class Database
 		$type="";
 		$fields="A";
 		$temp = [];
+		$first_field_b = false;
 		foreach($lines as $line) {
 			$line = trim($line);
 			if(substr($line,0,3)=="***"){
@@ -230,11 +245,15 @@ class Database
 				$temp["fields_a"]=[];
 				$temp["fields_b"]=[]; 
 			}
-			else if(substr($line,0,3)=="---")$fields="B";
-			else if(!$line || $line === "") continue;
+			else if(substr($line,0,3)=="---") {$fields="B"; $first_field_b = true; }
+			else if(!$line || $line === "" || substr($line,0,1) == "#") continue;
 			else {
 				if($fields=="A")$temp["fields_a"][]=$line;
-				else $temp["fields_b"][]=$line;
+				else {	
+					$temp["fields_b"][]=$line;
+					if ($first_field_b) $this->first_field_b[$type] = explode("|",$line)[0];
+					$first_field_b = false;
+				}
 			}
 		}
 		$this->schemas[$type]=$temp;
@@ -348,11 +367,11 @@ function encode_line_breaks($text){
 			foreach($assets as $id=>$fields_a){
 				echo "<div style='background:#000; border:3px solid #009; padding:10px; margin:10px; color:#fff'>";
 				echo $asset_type." / ".$id."<br>";
-				foreach($fields_a as $field){
-					echo "<b>".$field[0]." : </b>".$field[1]."<br>";
+				foreach($fields_a as $key=>$value){
+					echo "<b>".$key." : </b>".$value."<br>";
 				}
-				foreach($this->fields_b[$asset_type][$id] as $field){
-					echo "<b>".$field[0]." : </b>".$field[1]."<br>";
+				foreach($this->fields_b[$asset_type][$id] as $key=>$value){
+					echo "<b>".$key." : </b>".$value."<br>";
 				}
 				echo "</div>";
 			}

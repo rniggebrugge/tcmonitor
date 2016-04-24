@@ -39,6 +39,9 @@ session_start();
                         case "./admintoolraw": if ($authLevel<10) break;
                                 require("./modules/admintool_raw.php");
                                 break;
+                        case "./dbschema": if ($authLevel<10) break;
+                                require("./modules/dbschema.php");
+                                break;
                 } 
         }
 

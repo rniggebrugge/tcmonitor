@@ -28,7 +28,6 @@ $(function(){
 			data = $.parseJSON(data);
 			if(data.error && data.error!=="") return;
 			data = data.data;
-			data.sort(function(a,b){ if (a.title==b.title)return 0; return a.title<b.title?-1:1});
 			data.forEach(function(item){
 				select.append($("<option value="+item.id+">"+item.title+"</option>"));
 			});

@@ -25,25 +25,22 @@ session_start();
 		}
 	}
 	$db->select($type, $id, array_slice($request, 2));
+	$db->sort_results();
 	echo '{"error":"","data":[';
-	$comma="";
-	foreach($db->fields_a[$type] as $item_id=>$item_fields){
+	$comma=""; 
+	foreach($db->last_results as $item_id=>$item_fields){
 		echo $comma.'{"id":'.$item_id;
-		if($listtype=="list") echo ',"title":'.json_encode($item_fields[0][1]);
+		if($listtype=="list") echo ',"title":'.json_encode($item_fields["title"]);
 		else {
-			foreach($item_fields as $field_a) 
-				echo ', "'.$field_a[0].'":'.json_encode($field_a[1]).'';
-			foreach($db->fields_b[$type][$item_id] as $field_b) 
-				echo ', "'.$field_b[0].'":'.json_encode(q_dec($field_b[1]));
+			foreach($item_fields as $key=>$value) 
+				echo ', "'.$key.'":'.json_encode($value).'';
 		}
 		echo '}';
 		$comma=', ';
 	}
 	echo ']';
 	if ($listtype=="items"){
-		$fb = isset($db->fields_b[$type]) && isset($db->fields_b[$type][$item_id]) 
-				&& isset($db->fields_b[$type][$item_id][0])?$db->fields_b[$type][$item_id][0][0]:"";
-		echo ', "first_field_b":"'.$fb.'"';
+		echo ', "first_field_b":"'.$db->first_field_b[$type].'"';
 	}
 	echo '}';
 

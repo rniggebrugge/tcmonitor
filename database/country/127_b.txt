@@ -1,1 +1,1 @@
-general_situation=Overall+the+situation+is+rather+good.+Contact+Points+are+up+to+date%2C+we+are+still+waiting+for+Atlas+updates%2C+something+Johannes+and+Stefan+are+working+one.%0D%0A
+general_situation=Overall+the+situation+is+rather+good.+Contact+Points+are+up+to+date%2C+we+are+still+waiting+for+Atlas+updates%2C+something+Johannes+and+Stefan+are+working+one.%0D%0ABut+ok.+we+need+to+see%21%21%21%21%0D%0A
