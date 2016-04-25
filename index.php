@@ -27,6 +27,11 @@ session_start();
                 $authLevel = (int)$_SESSION["authorization"];
 		$country = (int)$_SESSION["country"];
         }
+        if ($authLevel>1 && isset($p["change_country"]) && (int)$p["change_country"]){
+
+                $country = (int)$p["change_country"];
+                $_SESSION["country"]=$country;
+        }
 
 // output to browser 
         require("./html/head.php");
@@ -41,8 +46,14 @@ session_start();
                         case "./admintoolraw": if ($authLevel<10) break;
                                 require("./modules/admintool_raw.php");
                                 break;
+                        case "./import": if ($authLevel<10) break;
+                                require("./modules/import_from_file.php");
+                                break;
                         case "./dbschema": if ($authLevel<10) break;
                                 require("./modules/dbschema.php");
+                                break;
+                        case "./contacts":
+                                require("./modules/updatecontacts.php");
                                 break;
                         default:
                                 echo get_text_block("homepage", $db);              

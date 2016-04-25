@@ -9,7 +9,7 @@ if (POST){
 <table style="border:1px solid #999; border-collapse:collapse">
 <tr><td>Asset type:</td><td><select name="type"><option value="">choose</option><?php
 	foreach($db->types as $type) echo "<option value='$type'>$type</option>";
-?></select> > <select name="item"><option value="0"> create new</option></select>
+?></select> > <select name="item" style="width:500px; overflow:hidden"><option value="0"> create new</option></select>
 <input type=text value=0 size=4 name=id style="text-align:right;float:right" onclick="alert('Be very careful when changing the ID field manually!!!\n\nIt will make a copy of the item, possibly overwriting an existing one with chosen ID!')"> 
 </td></tr>
 <tr><td>Fields A:</td><td><textarea name="fields_a" rows="6" cols="100"></textarea></td></tr>

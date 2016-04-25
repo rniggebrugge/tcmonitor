@@ -17,8 +17,8 @@ class Database
 		$this->types = [];
 		$this->fields_a = [];
 		$this->fields_b = [];
-		$assets = scandir($path);
 		$full_index = [];
+		$assets = scandir($path);
 		foreach($assets as $asset){
 			if(substr($asset,0,1)!=="." && is_dir($path.$asset)){
 				$this->types[]=$asset;
@@ -75,11 +75,11 @@ class Database
 				$this->fields_b[$type][$s_id]=[];
 				for($i=1;$i<count($lines_a);$i++) {
 					$temp = splitter($lines_a[$i]);
-					$this->fields_a[$type][$s_id][$temp[0]]=$temp[1];
+					$this->fields_a[$type][$s_id][$temp[0]]=trim($temp[1]);
 				}
 				for($i=0;$i<count($lines_b);$i++) {
 					$temp  = splitter($lines_b[$i]);
-					$this->fields_b[$type][$s_id][$temp[0]]=q_dec($temp[1]);
+					$this->fields_b[$type][$s_id][$temp[0]]=trim(q_dec($temp[1]));
 				}
 				$this->last_results[$s_id]=array_merge($this->fields_a[$type][$s_id], $this->fields_b[$type][$s_id]);
 			} 
@@ -117,7 +117,7 @@ class Database
 	}
 
 	function calculate_match_a($lines, $requirements, $AND){
-		$m=0;
+		$m=0; 
 		if (count($requirements)===0)return 1;
 		if(isset($requirements["title"])){
 			$parts = splitter($lines[1]);
@@ -165,8 +165,8 @@ class Database
 				$this->filepath.$asset.'/'.$id.'_a.txt', 
 				$key.'='.$value."\n", FILE_APPEND | LOCK_EX);
 		}
+		file_put_contents($this->filepath.$asset.'/'.$id.'_b.txt',"");
 		if (count($fields_b)> 0){
-			file_put_contents($this->filepath.$asset.'/'.$id.'_b.txt',"");
 			foreach($fields_b as $key=>$value ){
 				file_put_contents(
 					$this->filepath.$asset.'/'.$id.'_b.txt', 

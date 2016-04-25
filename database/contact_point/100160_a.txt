@@ -1,0 +1,4 @@
+Last update: 2016-04-25-17-46-42
+title=PATETT, Dr. Helmut	
+email=helmut.patett@gsta.landsh.de
+country=131

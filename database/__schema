@@ -1,13 +1,11 @@
 ***contact_point
 title
-firstname
-lastname
+email
 country|country
 added|checkbox
 removed|checkbox
 emailchange|checkbox
 ---
-email
 remark|textarea
 
 
@@ -48,6 +46,11 @@ national_legislation_url
 remark|textarea
 implementation_date|date
 
+
+
+***legal_instrument
+title
+reference
 
 ***website_text
 title

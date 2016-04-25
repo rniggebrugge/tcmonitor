@@ -1,0 +1,85 @@
+contact_point
+title|email|country
+
+================start data=================
+CEH, Laura Felicia	
+ceh_laura@mpublic.ro
+103
+CIUREZU GHERGHE, Mirela Carmen	
+mirela.ciurezu@just.ro
+103
+JUVERDEANU, Tatiana	
+tatiana.juverdeanu@just.ro
+103
+KRECH, Ion	
+ion.krech@just.ro
+103
+MIRITA, Emanuela	
+emanuela.mirita@just.ro
+103
+MORAR, Ioana-Cristina	
+ioana.morar@just.ro
+103
+PETCU, Ingrid Renata	
+ipetcu@pna.ro
+103
+RADU, Mariana 	
+mradu@eurojust.europa.eu
+103
+ROTARU RADU, Cristina	
+cristina.rotaru@just.ro
+103
+STAN, Stefania	
+stan_stefania@mpublic.ro
+103
+BERGER, Alexander	
+alexander.Berger@genpro.gov.sk
+142
+CANDA, Tomáš	
+tomas.canda@justice.sk
+142
+CHLAPECKOVA, Nina	
+nina.chlapeckova@justice.sk
+142
+FABOVÁ, Silvia	
+Silvia.Fabova@genpro.gov.sk
+142
+FLASIKOVA, Dorota	
+dorota.flasikova@justice.sk
+142
+GALUSOVA, Zuzana	
+zuzana.galusova@justice.sk
+142
+HUDECOVA, Barbara	
+barbara.hudecova@genpro.gov.sk
+142
+JAKUBCIK, Stanislav	
+Stanislav.Jakubcik@genpro.gov.sk
+142
+JELENAKOVA, Renáta 	
+renata.jelenakova@justice.sk
+142
+JURICEKOVA, Stanislava	
+stanislava.juricekov@justice.sk
+142
+KOPERNICKA, Jana	
+jana.kopernicka@genpro.gov.sk
+142
+KRIEGER, Jaroslav	
+Jaroslav.Krieger@genpro.gov.sk
+142
+KULJACKOVA, Katarína	
+Katarina.Kuljackova@genpro.gov.sk
+142
+MARTINCOVÁ, Monika	
+monika.martincova@genpro.gov.sk
+142
+NOVOTNÁ, Adriána	
+adriana.novotna@justice.sk
+142
+PERUZEKOVA, Katarína	
+Katarina.Peruzekova@genpro.gov.sk
+142
+TIZA, Miroslav	
+miroslav.tiza@genpro.gov.sk
+142
