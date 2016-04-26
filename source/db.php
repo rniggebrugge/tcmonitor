@@ -58,6 +58,7 @@ class Database
 		$id = (int)$id;
 		if(!$this->is_type($type)) return false;
 		if($id && !$this->item_exists($type, $id)) return false;
+		$schema = $this->schemas[$type];
 		$files = scandir($this->filepath.$type.'/');
 		$count = 0;
 		foreach($files as $file) if (preg_match('/('.($id?$id:'\d+').')_a/', $file, $matches)){
@@ -76,6 +77,8 @@ class Database
 				for($i=1;$i<count($lines_a);$i++) {
 					$temp = splitter($lines_a[$i]);
 					$this->fields_a[$type][$s_id][$temp[0]]=trim($temp[1]);
+					$label = $this->read_associated_label($schema["fields_a"][$temp[0]], (int)$temp[1]);
+					if($label)$this->fields_a[$type][$s_id][$temp[0]."__"]=$label;
 				}
 				for($i=0;$i<count($lines_b);$i++) {
 					$temp  = splitter($lines_b[$i]);
@@ -85,6 +88,12 @@ class Database
 			} 
 		}
 		return $count;
+	}
+
+	function read_associated_label($type, $id){
+		if(!$type||!$id||!$this->is_type($type)||!$this->item_exists($type, $id))return false;
+		$lines = file($this->filepath.$type.'/'.$id.'_a.txt', FILE_IGNORE_NEW_LINES);
+		return q_dec(splitter($lines[1])[1]);
 	}
 
 	function get_results(){
@@ -253,10 +262,12 @@ class Database
 			else if(substr($line,0,3)=="---") {$fields="B"; $first_field_b = true; }
 			else if(!$line || $line === "" || substr($line,0,1) == "#") continue;
 			else {
-				if($fields=="A")$temp["fields_a"][]=$line;
+				$parts = explode("|", $line);
+				if(count($parts)<2 || !$parts[1])$parts[1]="";
+				if($fields=="A")$temp["fields_a"][$parts[0]]=$parts[1];
 				else {	
-					$temp["fields_b"][]=$line;
-					if ($first_field_b) $this->first_field_b[$type] = explode("|",$line)[0];
+					$temp["fields_b"][$parts[0]]=$parts[1];
+					if ($first_field_b) $this->first_field_b[$type] = $parts[0];
 					$first_field_b = false;
 				}
 			}
@@ -273,7 +284,7 @@ class Database
 			$id = 0;
 			$title = "new $type";
 		} else {
-			$f = $s["fields_a"][0];
+			$f = array_keys($s["fields_a"])[0];
 			$title = $item[$f];
 		}
 		echo "<form method='POST'><table>";
@@ -282,17 +293,15 @@ class Database
 		echo "<input type='hidden' name='edit_form' value='save'>";
 		echo "<tr><td colspan=2 class=header><b>$title </b>($type  <u style=''>$id</u>)</td></tr>";
 		echo "<tr><td colspan=2><hr></td></tr>";
-		foreach($s["fields_a"] as $field){
-			$parts = explode("|", $field);
-			echo "<tr><td>".$parts[0]."</td><td>";
-			echo $this->add_edit_field($parts, isset($item[$parts[0]])?$item[$parts[0]]:"");
+		foreach($s["fields_a"] as $field=>$field_type){
+			echo "<tr><td>".$field."</td><td>";
+			echo $this->add_edit_field($field, $field_type, isset($item[$field])?$item[$field]:"");
 			echo "</td></tr>";
 		}
 		echo "<tr><td colspan=2><hr></td></tr>";
-		foreach($s["fields_b"] as $field){
-			$parts = explode("|", $field);
-			echo "<tr><td>".$parts[0]."</td><td>";
-			echo $this->add_edit_field($parts, isset($item[$parts[0]])?$item[$parts[0]]:"");
+		foreach($s["fields_b"] as $field=>$field_type){
+			echo "<tr><td>".$field."</td><td>";
+			echo $this->add_edit_field($field, $field_type, isset($item[$field])?$item[$field]:"");
 			echo "</td></tr>";
 		}
 		echo "<tr><td>&nbsp;</td><td><input type=submit value=save end_action='close'> | ";
@@ -314,18 +323,16 @@ class Database
 
 		$text_a = "Last update: ".date("Y-m-d-H-i-s")."\n";
 		$text_b = "";
-		foreach($s["fields_a"] as $field){
-			$parts= explode("|", $field);
-			$text_a .= $parts[0]."=";
-			if(isset($parts[1]) && $parts[1]=="checkbox") $value=isset($p[$parts[0]])?1:0;
-			else $value=$p[$parts[0]];
+		foreach($s["fields_a"] as $field=>$field_type){
+			$text_a .= $field."=";
+			if($field_type && $field_type=="checkbox") $value=isset($p[$field])?1:0;
+			else $value=$p[$field];
 			$text_a .= $value."\n";
 		}
-		foreach($s["fields_b"] as $field){
-			$parts= explode("|", $field);
-			$text_b .= $parts[0]."=";
-			if(isset($parts[1]) && $parts[1]=="checkbox") $value=isset($p[$parts[0]])?1:0;
-			else $value=$p[$parts[0]];
+		foreach($s["fields_b"] as $field=>$field_type){
+			$text_b .= $field."=";
+			if($field_type && $field_type=="checkbox") $value=isset($p[$field])?1:0;
+			else $value=$p[$field];
 			$text_b .= q_enc($value)."\n";
 		}
 		file_put_contents($this->filepath.$type.'/'.$id.'_a.txt', $text_a);
@@ -333,10 +340,8 @@ class Database
 		return $id;
 	}
 
-	function add_edit_field($parts, $value=""){
-		$name = $parts[0];
-		$specs = "";
-		if(count($parts)>1) $specs = $parts[1];
+	function add_edit_field($name, $specs, $value=""){
+		if(!$specs)$specs="";
 		if(!$name || $name === "") return "x";
 		if (!$specs || $specs ==="") return "<input type=text size=95 name='$name' value='$value'>";
 		if ($specs =="date") return "<input type=date size=15 name='$name' value='$value'>";

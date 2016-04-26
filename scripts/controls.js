@@ -5,7 +5,7 @@ $(function(){
 	})
 	$("td[sort]").css({cursor:"pointer"}).click(function(){
 		var sort=$(this).attr("sort"), 
-			asc=$("#list tr:eq(1)").attr("data-"+sort)>$("#list tr:eq(2)").attr("data-"+sort);
+			asc=$("#list tr:eq(1)").attr("data-"+sort)>$("#list tr:eq(-1)").attr("data-"+sort);
 		$("#list tr:gt(0)").sort(function(a, b){return a.dataset[sort] > b.dataset[sort] ? (asc?1:-1):(asc?-1:1)}).appendTo("#list");
 	});
 	$("input[data-filter").click(function(){return false}).change(updateFilter)

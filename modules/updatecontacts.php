@@ -10,14 +10,15 @@ tr.hide_row { display:none;}
 </style>
 <script>
 $(function(){
-	var request_url="/tcmonitor/communication/contact_point/items/country=<?php echo $country;?>";
+	var request_url="/tcmonitor/communication/contact_point/items/<?php echo $country!=99999?'country='.$country:'';?>";
 	$.post(request_url, function(data){
 		data = $.parseJSON(data);
 		if(data.error && data.error!=="") return;
 		data = data.data;
 			data.forEach(function(item){
 				var table=$("#list"), 
-					tr = $("<tr data-id="+item.id+" data-email='"+item.email+"' data-title='"+item.title+"' data-country='"+item.country+"'></tr>"), 
+					tr = $("<tr data-id="+item.id+" data-email='"+item.email+
+						"' data-title='"+item.title+"' data-country='"+item.country__+"'></tr>"), 
 					td;
 				td = $("<td>"+item.id+"</td>");
 				tr.append(td);
@@ -25,7 +26,7 @@ $(function(){
 				tr.append(td);
 				td = $("<td>"+item.email+"</td>");
 				tr.append(td);
-				td = $("<td>"+item.country+"</td>");
+				td = $("<td><img src='http://www.ejnforum.eu/cp/uploaded_content/spacer.png' class='flag_sprite' style='background-position:"+flags_pos[item.country]+"'>"+ item.country__+"</td>");
 				tr.append(td);
 				td = $("<td>&nbsp;</td>");
 				tr.append(td);
@@ -37,6 +38,4 @@ $(function(){
 </script>
 <?php
 
-
-print_r($db->schemas["contact_point"]);
 ?>

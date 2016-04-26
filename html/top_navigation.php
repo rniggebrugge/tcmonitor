@@ -38,7 +38,9 @@ if($authLevel==10) {
 		echo "<optgroup label='Associated Countries'>";
 		foreach($countries as $id=>$dets) echo "<option value='$id' ".($id==$country?"selected":"").">".$dets["title"]."</option>";
 		echo "</optgroup>";
+		echo "<optgroup label='Show all'>";
 		echo "<option value=99999 ".($country==99999?"selected":"").">ALL</option>";
+		echo "</optgroup>";
 	}
 	echo "</select></form>";
 }
