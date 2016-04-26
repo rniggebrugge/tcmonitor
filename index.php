@@ -55,27 +55,17 @@ session_start();
                         case "./contacts":
                                 require("./modules/updatecontacts.php");
                                 break;
+                        case "./status":
+                                require("./modules/updatestatus.php");
+                                break;
+                        case "./fiches":
+                                require("./modules/updatefiches.php");
+                                break;
                         default:
                                 echo get_text_block("homepage", $db);              
                 } 
         }
-
-
-
-
-
-        // if(POST && isset($p["edit_form"])){
-        //         $saved_id = $db->save_from_form();
-        //         if($saved_id) echo "<div style='background:#009; color:#fff'>Successfully saved $saved_id.</div>";
-        //         else echo "<div style='background:#900; color:#fff'>Problem saving!</div>";
-        // }
-        // $a = $db->select("message");
-        // foreach ($db->last_ids() as $id){
-        //         $item = $db->edit_form("message", $id);
-        //         print_r($item);
-        // } 
-
-
+        // end of restricted content
 
 	require("./html/foot.php");
 

@@ -1,0 +1,88 @@
+contact_point
+title|email|country
+
+================start data=================
+Fëngjilli, Odeta 	
+Odeta.Thengjilli@drejtesia.gov.al
+94
+GASHI, Rovena 	
+rgashi@pp.gov.al
+94
+Milevska, Gordana	
+gordanamilevska@mjustice.gov.mk
+98
+Zvrlevski, Marko	
+m.zvrlevski@jorm.gov.mk
+98
+Gunnarsson, Helgi Magnús 	
+hmg@tmd.is
+145
+Sigurðsson, Hólmsteinn Gauti 	
+hgs@sersak.is
+145
+SNORRASON, Jon H.	
+jhbs@lrh.is
+145
+GLEDOVIC, Blagoje	
+blagoje.gledovic@mpa.gov.me
+102
+RUTOVIC, Veljko	
+veljkorutovic@t-com.me
+102
+Janicijevic, Gordana 	
+gordana.janicijevic@rjt.gov.rs
+104
+Milosavljevic, Branka	
+apjtns@gmail.com
+104
+Nikolic, Katarina	
+katarina.nikolic@mpravde.gov.rs
+104
+VASOVIC, Jasmina	
+jasnavasovic@yahoo.com
+104
+Kircali, Sümeyye	
+ab171249@adalet.gov.tr
+105
+KOZAN, Ahmet 	
+ab34146@adalet.gov.tr
+105
+Orhan, Zehra Cansu 	
+ab126028@adalet.gov.tr
+105
+BRUCKER, Christine 	
+Christine.Brucker@staatsanwaltschaft.li
+146
+KAISER, Brigitte	
+brigitte.kaiser@staatsanwaltschaft.li
+146
+Angell, Arnt	
+arnt.angell@politiet.no
+147
+Grøstad, Anne	
+anne.grostad@riksadvokaten.no
+147
+Guttormsen , Kirsti 	
+kirsti.guttormsen@statsadvokatene.no
+147
+Houck Egseth, Liv Christina	
+liv.egseth@jd.dep.no
+147
+Oddbjørnsen, Ragnhild	
+ragnhild.oddbjornsen@jd.dep.no
+147
+Sødal, Petter	
+psodal@eurojust.europa.eu
+147
+Sundet, Kim	
+kim.sundet@statsadvokatene.no
+147
+Volledal, Per Egil	
+volledal@statsadvokatene.no
+147
+VLAHOVIC, Matjaz	
+matjaz.vlahovic@bj.admin.ch
+148
+VOGELSANG, Michel	
+michel.vogelsang@bj.admin.ch
+148

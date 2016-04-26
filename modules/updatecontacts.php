@@ -1,9 +1,10 @@
 <table id="list">
 <tr>
-<td sort=id>id<input type=text data-filter="id"></td>
-<td sort=title>name<input type=text data-filter="title"></td>
-<td sort=email>email<input type=text data-filter="email"></td>
-<td clearfilters>X</td></tr></table>
+<td sort=id width="5%">id<br><input type=text data-filter="id" size="3"></td>
+<td sort=title width="40%">name<br><input type=text data-filter="title"></td>
+<td sort=email width="40%">email<br><input type=text data-filter="email"></td>
+<td sort=country width="10%">country<br><input type=text data-filter="country"></td>
+<td clearfilters width="5%">X</td></tr></table>
 <style>
 tr.hide_row { display:none;}
 </style>
@@ -16,7 +17,7 @@ $(function(){
 		data = data.data;
 			data.forEach(function(item){
 				var table=$("#list"), 
-					tr = $("<tr data-id="+item.id+" data-email='"+item.email+"' data-title='"+item.title+"'></tr>"), 
+					tr = $("<tr data-id="+item.id+" data-email='"+item.email+"' data-title='"+item.title+"' data-country='"+item.country+"'></tr>"), 
 					td;
 				td = $("<td>"+item.id+"</td>");
 				tr.append(td);
@@ -26,31 +27,16 @@ $(function(){
 				tr.append(td);
 				td = $("<td>"+item.country+"</td>");
 				tr.append(td);
+				td = $("<td>&nbsp;</td>");
+				tr.append(td);
 				table.append(tr);
 
 			});
 	});
-
-	$("td[clearfilters]").css({cursor:"pointer"}).click(function(){
-		$("input[data-filter]").val(""); updateFilter();
-	})
-	$("td[sort]").css({cursor:"pointer"}).click(function(){
-		var sort=$(this).attr("sort"), 
-			asc=$("#list tr:eq(1)").attr("data-"+sort)>$("#list tr:eq(2)").attr("data-"+sort);
-		$("#list tr:gt(0)").sort(function(a, b){return a.dataset[sort] > b.dataset[sort] ? (asc?1:-1):(asc?-1:1)}).appendTo("#list");
-	});
-	$("input[data-filter").click(function(){return false}).change(updateFilter)
-
-	 function updateFilter(){ 
-		$("#list tr:gt(0)").each(function(){
-			var visible=true, $tr=$(this);
-			$("input[data-filter").each(function(){
-				if($(this).val()!=="" && $tr.attr("data-"+$(this).attr("data-filter")).toLowerCase().indexOf($(this).val().toLowerCase())==-1) visible=false;
-			});
-			if(!visible) $(this).addClass("hide_row");
-			else $(this).removeClass("hide_row");
-		});
-	}
-	
 });
 </script>
+<?php
+
+
+print_r($db->schemas["contact_point"]);
+?>

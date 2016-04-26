@@ -12,6 +12,10 @@ remark|textarea
 ***country
 title
 flag
+eu|checkbox
+candidate|checkbox
+associated|checkbox
+third|checkbox
 -----
 general_situation|textarea
 
@@ -46,7 +50,9 @@ national_legislation_url
 remark|textarea
 implementation_date|date
 
-
+***fiche_belge
+title
+number
 
 ***legal_instrument
 title

@@ -1,0 +1,7 @@
+Last update: 2016-04-26-10-32-36
+title=Norway
+flag=
+eu=0
+candidate=0
+associated=1
+third=0

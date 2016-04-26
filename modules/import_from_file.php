@@ -37,7 +37,7 @@ foreach($files  as $file){
 	}
 }
 ?>
-<input type=text name=target value="">
+<input type=hidden name=target value="">
 </form>
 <script>
 $(function(){

@@ -30,10 +30,28 @@ if ( (int)$_SESSION["authorization"]<1 ){
 		</table></form>";
 } else if ($country<1){
 	$country = 0;
-	$countries = $db->get_list("country");
+	$db->select("country",0,["eu"=>1]);
+	$db->sort_results();
+	$countries = $db->get_results();
 	echo "<form method='POST' action='/monitor/'>
 		Country: <select name='select_country'>";
-	foreach($countries as $id=>$label) echo "<option value='$id'>$label</option>";
+	echo "<optgroup label='EJN'>";
+	foreach($countries as $id=>$dets) echo "<option value='$id'>".$dets["title"]."</option>";
+	echo "</optgroup>";
+	if($authLevel>1){
+		$db->select("country",0,["candidate"=>1]);
+		$db->sort_results();
+		$countries = $db->get_results();
+		echo "<optgroup label='Candidate Countries'>";
+		foreach($countries as $id=>$dets) echo "<option value='$id'>".$dets["title"]."</option>";
+		echo "</optgroup>";
+		$db->select("country",0,["associated"=>1]);
+		$db->sort_results();
+		$countries = $db->get_results();
+		echo "<optgroup label='Associated Countries'>";
+		foreach($countries as $id=>$dets) echo "<option value='$id'>".$dets["title"]."</option>";
+		echo "</optgroup>";
+	}
 	echo "</select> > <input type='submit' value='choose'></form>";
 } 
 
