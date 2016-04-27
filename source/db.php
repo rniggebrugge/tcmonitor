@@ -121,8 +121,10 @@ class Database
 		if(!isset($this->fields_a[$type][$id])) {
 			$test = $this->select($type, $id);
 			if (!$test || $test === 0) return [];
+			return $this->last_results[$id];
+		} else {
+			return array_merge($this->fields_a[$type][$id], $this->fields_b[$type][$id]);
 		}
-		return $this->last_results[$id];
 	}
 
 	function calculate_match_a($lines, $requirements, $AND){
@@ -155,6 +157,16 @@ class Database
 			}
 		}
 		return $m;
+	}
+
+	function delete_item($type, $id){
+		if (!$this->is_type($type)) return "requested type unknown";
+		if (!$this->item_exists($type, $id)) return "could not delete object";
+		$test = unlink($this->filepath.$type."/".$id."_a.txt");
+		if(!$test) return "could not remove file ".$id."_a.txt";
+		$test = unlink($this->filepath.$type."/".$id."_b.txt");
+		if(!$test) return "could not remove file ".$id."_b.txt";
+		return "";
 	}
 
 
@@ -200,13 +212,25 @@ class Database
 
 	function next_id($type){
 		$max = 99999;
-		$files = scandir($this->filepath.$type.'/');
-		foreach($files as $file) if (preg_match('/(\d+)_a/', $file, $matches)){
-			$sid = $matches[1];
-			if($sid>$max)$max=$sid;
+		$path = $this->filepath.$type.'/';
+		$files = scandir($path , SCANDIR_SORT_DESCENDING);
+		if (isset($files[0]) && preg_match('/(\d+)_[ab]/', $files[0], $matches)){
+			$found_id = (int)$matches[1];
+			if($found_id>$max)$max=$found_id;
 		}
 		$max++;
 		return $max;
+	}
+
+	function find_latest($type, $limit = 0, $number = 1){
+		$found = [];
+		$path = $this->filepath.$type.'/';
+		$files = array_diff(scandir($path, SCANDIR_SORT_DESCENDING), array('..','.'));
+		while(count($found)<$number && $item = array_shift($files)){ 
+			$id=explode("_", $item)[0];
+			if($limit === 0 || $id<$limit) { $found[$id]=$this->get_item($type, $id); }
+		}		
+		return $found;
 	}
 
 	function load_full_index($types = []){

@@ -1,5 +1,0 @@
-Last update: 2016-04-24-23-38-15
-title=please call me
-to=67
-for_secretariat=0
-read=1

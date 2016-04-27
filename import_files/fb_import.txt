@@ -1,0 +1,112 @@
+fiche_belge
+title|number
+
+================start data======================
+Interception, recording and transcription of telecommunications 
+101
+Tracing of telecommunications 
+102
+Interception and recording of other forms of communication 
+103
+Interception of mail 
+104
+Observation 
+105
+Interception of telecommunication - Art. 18 2b of the MLA Convention 
+106
+Interception of telecommunication without the technical assistance of another Member State 
+107
+Infiltration by undercover agents of the requested State 
+201
+Infiltration by agents of the requesting State in the territory of the requested State 
+202
+Infiltration by an informer of the requested State 
+203
+Handling of informers 
+204
+Superficial body search 
+301
+Invasive body search 
+302
+Psychiatric medical examination 
+303
+Control of identity, measures for judicial identification 
+304
+Technical or scientific examinations or expert evaluations 
+305
+Spontaneous exchange of information 
+401
+Order to produce documents 
+402
+Other possibilities of obtaining information concerning taxes or bank accounts 
+403
+Access to public documents in judicial files 
+404
+Communication of individual police records 
+405
+Sending and service of procedural documents 
+406
+Transfer of proceedings 
+407
+Sequestration of assets 
+501
+Freezing of bank accounts 
+502
+Restitution 
+503
+Interim measures in view of confiscation 
+504
+Confiscation 
+505
+Visit to and search of homes 
+601
+Visit and search on the site of an offence 
+602
+Summoning witnesses 
+701
+Hearing witnesses: standard procedure 
+702
+Hearing witnesses: by video conference 
+703
+Hearing witnesses: by telephone 
+704
+Hearing children 
+705
+Hearing persons collaborating with the inquiry 
+706
+Hearing victims/plaintiffs 
+707
+Hearing experts 
+708
+Summoning suspects/persons accused 
+709
+Hearing suspects/persons accused: standard procedure 
+710
+Hearing suspects/persons accused: by video conference 
+711
+Hearing suspects/persons accused: by telephone 
+712
+Confrontation 
+713
+Cross-border observation 
+801
+Cross-border hot pursuit 
+802
+Cross-border tracking [by placing a beeper on a vehicle or a person] 
+803
+Controlled deliveries 
+804
+Joint investigation teams 
+805
+European Arrest Warrant 
+901
+Enforcement of a Financial Penalty 
+902
+Enforcement of a Custodial Sentence 
+903
+Probation measures 
+904
+Execution of a Supervision Measure 
+905
+European Protection Order 
+906

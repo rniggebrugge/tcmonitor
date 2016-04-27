@@ -7,7 +7,9 @@ foreach($db->types as $type) {
 	echo "<div id='block_$type' style='display:none'><table>";
 	foreach($list as $item_id=>$item_title) {
 		echo 	"<tr><td>$item_id</td><td>$item_title</td><td>
-				<input type='button' value='edit' item_id='$item_id' asset='$type'></td><tr>";
+				<input type='button' value='edit' item_id='$item_id' asset='$type'>
+				<input type='button' value='delete' style='color:red' item_id='$item_id' asset='$type'>
+				</td><tr>";
 	}
 	echo "</table></div>";
 	echo "<div id='mask_all'></div><iframe frameborder='0' hspace='0' id='edit_iframe' style='width:1030px; height:600px; 
@@ -21,14 +23,25 @@ $(function(){
 		var type = $(this).attr("block");
 		$("#block_"+type).toggle();
 	});
-	$("div[block] input").click(function(){
+	$("input[value=new]").click(function(){
 		var type = $(this).attr("block");
 		edit_item(type, 0);
 		return false;
 	});
-	$("input[item_id]").click(function(){
+	$("input[value=edit]").click(function(){
 		var type = $(this).attr("asset"), id = $(this).attr("item_id");
 		edit_item(type, id);
+		return false;
+	});
+
+	$("input[value=delete]").click(function(){
+		var type = $(this).attr("asset"), id = $(this).attr("item_id");
+		if(!confirm("Delete "+type+" "+id+"?"))return;
+		$.post("/tcmonitor/delete/"+type+"/"+id, function(data){
+			if(data && data!=="") alert(data);
+		});
+		$(this).closest("tr").remove();
+
 		return false;
 	});
 
