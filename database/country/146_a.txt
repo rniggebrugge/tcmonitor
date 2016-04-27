@@ -1,7 +1,0 @@
-Last update: 2016-04-26-10-29-43
-title=Liechtenstein
-flag=
-eu=0
-candidate=0
-associated=1
-third=0

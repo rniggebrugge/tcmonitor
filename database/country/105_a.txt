@@ -1,7 +1,0 @@
-Last update: 2016-04-26-10-31-41
-title=Turkey
-flag=
-eu=0
-candidate=1
-associated=0
-third=0

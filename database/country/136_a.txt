@@ -1,7 +1,0 @@
-Last update: 2016-04-26-10-13-10
-title=Latvia
-flag=
-eu=1
-candidate=0
-associated=0
-third=0
