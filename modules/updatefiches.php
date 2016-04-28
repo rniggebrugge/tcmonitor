@@ -1,9 +1,9 @@
 <table id="list">
 <tr>
-<td sort=id width="5%">id<br><input type=text filter="id" size="3"></td>
-<td sort=title width="80%">title<br><input type=text filter="title"></td>
-<td sort=number width="10%">number<br><input type=text filter="number" size="8"></td>
-<td clearfilters width="5%">X</td></tr></table>
+<td sort=id >id<br><input type=text filter="id" size="3"></td>
+<td sort=title>title<br><input type=text filter="title"></td>
+<td sort=number style="width:120px">number<br><input type=text filter="number" size="8"></td>
+<td clearfilters>X</td></tr></table>
 <style>
 tr.hide_row { display:none;}
 </style>

@@ -38,7 +38,7 @@ function removeHoverClass(){
 
 function createTable(table, data, cells, actions){
 	data.forEach(function(item){
-		var tr=$("<tr></tr>"), td, field, button;
+		var tr=$("<tr></tr>"), td, field, button, w = 0;
 		tr.hover(addHoverClass, removeHoverClass)
 		for(field in item) tr.attr("data-"+field,item[field]);
 		for(field in cells){
@@ -54,10 +54,12 @@ function createTable(table, data, cells, actions){
 		if(actions!==false){
 			td=$("<td></td>");
 			for(field in actions){
-				button = $("<button>"+field+"</button>");
-				button.click(actions[field])
-				td.append(button)
+				button = $("<button style='width:100px; margin-right:10px'>"+field+"</button>");
+				button.click(actions[field]);
+				td.append(button);
+				w+=120;
 			}
+			td.css({width:w+"px"});
 			tr.append(td)
 		}
 		table.append(tr);

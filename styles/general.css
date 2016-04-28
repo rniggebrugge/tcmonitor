@@ -22,4 +22,5 @@ div.header input { margin:4px 10px 4px 10px;}
   background:url(http://www.ejnforum.eu/cp/images/flags.png) no-repeat;
 }
 
+table#list { width:100%; }
 .hover_row{ background:#9bf; cursor: pointer; }
