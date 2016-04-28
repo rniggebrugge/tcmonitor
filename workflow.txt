@@ -1,0 +1,10 @@
+TOOL CORRESPONDENT
+- logs in
+- chooses country
+- selects status legal instruments
+[shown list of li]]
+-a uses option "confirm status" -> ok, done
+-b uses option "change status"
+	- change date/text/url/status
+
+ 
