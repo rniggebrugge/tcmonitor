@@ -26,6 +26,7 @@ $(function(){
 				tr.append(td);
 				td = $("<td>&nbsp;</td>");
 				tr.append(td);
+				addHover(tr)
 				table.append(tr);
 
 			});

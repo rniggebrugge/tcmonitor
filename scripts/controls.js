@@ -24,3 +24,7 @@ $(function(){
 		});
 	}
 });
+
+function addHover(tr){
+	tr.hover(function(){$(this).css({background:"#09f"})}, function(){$(this).css({background:"#fff"})})
+}

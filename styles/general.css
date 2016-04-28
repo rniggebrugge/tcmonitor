@@ -5,9 +5,9 @@ a.topactive { background:#009; color:#9cf; text-decoration: none;}
 
 table { border-collapse: collapse; }
 table td { padding:4px 10px; border:1px solid #06d; vertical-align: top; font-family: Arial;
- font-size:13px; background: #fff}
+ font-size:13px; }
 table td.header { background:#006; color:#9cf; font-size: 14px; padding:4px 10px;}
-
+table tr { background: #fff}
 div.header { background:#006; color:#9cf; cursor: pointer; margin:20px 0 10px; padding:4px 10px;}
 div.header input { margin:4px 10px 4px 10px;}
 
