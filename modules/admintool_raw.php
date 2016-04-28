@@ -43,6 +43,7 @@ $(function(){
 		if(id){
 			var request_url="/tcmonitor/communication/"+type+"/items/id="+id;
 			$.post(request_url, function(data){
+				alert(data)
 				data = $.parseJSON(data);
 				if(data.error && data.error!=="") return;
 				var first_field_b = data.first_field_b, add_to = 0, text = ["",""];

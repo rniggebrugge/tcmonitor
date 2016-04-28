@@ -36,6 +36,8 @@ class Database
 		if(in_array($type, $this->types)) return;
 		$test = mkdir($this->filepath.$type, 0777);
 		if ($test) {
+			$test = mkdir($this->filepath.$type.'/a', 0777);
+			$test = mkdir($this->filepath.$type.'/b', 0777);
 			$this->types[]=$type;
 			$this->fields_a[$type] = [];
 		} else {
@@ -50,7 +52,7 @@ class Database
 	function item_exists($type, $id){
 		$id=(int)$id;
 		if(!$id || !$type || !$this->is_type($type))return false;
-		return is_file($this->filepath.$type.'/'.$id.'_a.txt');
+		return is_file($this->filepath.$type.'/a/'.$id);
 	}
 
 	function select($type, $id = 0, $req1 = [], $req2 = [], $AND = true){
@@ -59,12 +61,13 @@ class Database
 		if(!$this->is_type($type)) return false;
 		if($id && !$this->item_exists($type, $id)) return false;
 		$schema = $this->schemas[$type];
-		$files = scandir($this->filepath.$type.'/');
+		$files = scandir($this->filepath.$type.'/a/');
 		$count = 0;
-		foreach($files as $file) if (preg_match('/('.($id?$id:'\d+').')_a/', $file, $matches)){
-			$s_id = $matches[1];
-			$lines_a = file($this->filepath.$type.'/'.$s_id.'_a.txt', FILE_IGNORE_NEW_LINES);
-			$lines_b = file($this->filepath.$type.'/'.$s_id.'_b.txt', FILE_IGNORE_NEW_LINES);
+		foreach($files as $file) if ((int)$file>0){
+			$s_id = (int)$file;
+			if ($id>0 && $s_id!==$id) continue;
+			$lines_a = file($this->filepath.$type.'/a/'.$s_id, FILE_IGNORE_NEW_LINES);
+			$lines_b = file($this->filepath.$type.'/b/'.$s_id, FILE_IGNORE_NEW_LINES);
 			$m1 = $this->calculate_match_a($lines_a, $req1, $AND);
 			if ($AND && $m1==0) continue;
 			$m2 =  $this->calculate_match_b($lines_b, $req2, $AND);
@@ -92,7 +95,7 @@ class Database
 
 	function read_associated_label($type, $id){
 		if(!$type||!$id||!$this->is_type($type)||!$this->item_exists($type, $id))return false;
-		$lines = file($this->filepath.$type.'/'.$id.'_a.txt', FILE_IGNORE_NEW_LINES);
+		$lines = file($this->filepath.$type.'/a/'.$id, FILE_IGNORE_NEW_LINES);
 		return q_dec(splitter($lines[1])[1]);
 	}
 
@@ -162,10 +165,9 @@ class Database
 	function delete_item($type, $id){
 		if (!$this->is_type($type)) return "requested type unknown";
 		if (!$this->item_exists($type, $id)) return "could not delete object";
-		$test = unlink($this->filepath.$type."/".$id."_a.txt");
-		if(!$test) return "could not remove file ".$id."_a.txt";
-		$test = unlink($this->filepath.$type."/".$id."_b.txt");
-		if(!$test) return "could not remove file ".$id."_b.txt";
+		$test = unlink($this->filepath.$type."/a/".$id);
+		if(!$test) return "could not remove file /a/".$id;
+		$test = unlink($this->filepath.$type."/b/".$id);
 		return "";
 	}
 
@@ -175,22 +177,22 @@ class Database
 		if(!$asset || $asset === "") return 0;
 		if($id>0 && !isset($this->fields_a[$asset][$id])) return 0;
 		if((!$id || $id === 0) && count($fields_a) === 0 ) return 0;
-		if($id && !is_file($this->filepath.$asset.'/'.$id.'_a.txt')) return 0;
+		if($id && !is_file($this->filepath.$asset.'/a/'.$id)) return 0;
 		if($id && count($fields_a) === 0 ) $fields_a = $this->fields_a[$asset][$id];
 		if($id && count($fields_b) === 0 ) $fields_b = $this->fields_b[$asset][$id];
 		if(!in_array($asset, $this->types)) $this->create_type($asset);
 		if(!$id) $id = $this->next_id($asset);
-		file_put_contents($this->filepath.$asset.'/'.$id.'_a.txt',"Last update: ".date("Y-m-d-H-i-s")."\n");
+		file_put_contents($this->filepath.$asset.'/a/'.$id,"Last update: ".date("Y-m-d-H-i-s")."\n");
 		foreach($fields_a as $key=>$value ){
 			file_put_contents(
-				$this->filepath.$asset.'/'.$id.'_a.txt', 
+				$this->filepath.$asset.'/a/'.$id, 
 				$key.'='.$value."\n", FILE_APPEND | LOCK_EX);
 		}
-		file_put_contents($this->filepath.$asset.'/'.$id.'_b.txt',"");
+		file_put_contents($this->filepath.$asset.'/b/'.$id,"");
 		if (count($fields_b)> 0){
 			foreach($fields_b as $key=>$value ){
 				file_put_contents(
-					$this->filepath.$asset.'/'.$id.'_b.txt', 
+					$this->filepath.$asset.'/b/'.$id, 
 					$key.'='.q_enc($value)."\n", FILE_APPEND | LOCK_EX);
 			}
 		}
@@ -204,18 +206,18 @@ class Database
 		$text_b = $this->encode_line_breaks($text_b);
 		if(!in_array($asset, $this->types)) $this->create_type($asset);
 		if(!$id) $id = $this->next_id($asset);
-		file_put_contents($this->filepath.$asset.'/'.$id.'_a.txt',"Last update: ".date("Y-m-d-H-i-s")."\n");
-		file_put_contents($this->filepath.$asset.'/'.$id.'_a.txt', $text_a , FILE_APPEND | LOCK_EX);
-		file_put_contents($this->filepath.$asset.'/'.$id.'_b.txt', $text_b);
+		file_put_contents($this->filepath.$asset.'/a/'.$id,"Last update: ".date("Y-m-d-H-i-s")."\n");
+		file_put_contents($this->filepath.$asset.'/a/'.$id, $text_a , FILE_APPEND | LOCK_EX);
+		file_put_contents($this->filepath.$asset.'/b/'.$id, $text_b);
 		$this->select($asset, $id);
 	}
 
 	function next_id($type){
 		$max = 99999;
-		$path = $this->filepath.$type.'/';
+		$path = $this->filepath.$type.'/a/';
 		$files = scandir($path , SCANDIR_SORT_DESCENDING);
-		if (isset($files[0]) && preg_match('/(\d+)_[ab]/', $files[0], $matches)){
-			$found_id = (int)$matches[1];
+		if (isset($files[0]) && (int)$files[0]>0){
+			$found_id = (int)$files[0];
 			if($found_id>$max)$max=$found_id;
 		}
 		$max++;
@@ -224,10 +226,10 @@ class Database
 
 	function find_latest($type, $limit = 0, $number = 1){
 		$found = [];
-		$path = $this->filepath.$type.'/';
+		$path = $this->filepath.$type.'/a/';
 		$files = array_diff(scandir($path, SCANDIR_SORT_DESCENDING), array('..','.'));
 		while(count($found)<$number && $item = array_shift($files)){ 
-			$id=explode("_", $item)[0];
+			$id=(int)$item;
 			if($limit === 0 || $id<$limit) { $found[$id]=$this->get_item($type, $id); }
 		}		
 		return $found;
@@ -238,12 +240,12 @@ class Database
 		foreach($types as $type) if(in_array($type, $this->types)){
 			if(isset($this->full_index[$type]))continue;
 			$this->full_index[$type]=[];
-			$files = scandir($this->filepath.$type.'/');
-			foreach($files as $file) if (preg_match('/(\d+)_a/', $file, $matches)){
+			$files = array_diff(scandir($this->filepath.$type.'/a/'), array('..','.'));
+			foreach($files as $file) {
 				$temp = [];
-				$s_id = $matches[1];
+				$s_id = (int)$file;
 				$temp[]=$s_id;
-				$lines = file($this->filepath.$type.'/'.$s_id.'_a.txt', FILE_IGNORE_NEW_LINES);
+				$lines = file($this->filepath.$type.'/a/'.$s_id, FILE_IGNORE_NEW_LINES);
 				$temp[]=$lines[0];
 				$parts = splitter($lines[1]);
 				$temp[]=$parts[1];
@@ -359,8 +361,8 @@ class Database
 			else $value=$p[$field];
 			$text_b .= q_enc($value)."\n";
 		}
-		file_put_contents($this->filepath.$type.'/'.$id.'_a.txt', $text_a);
-		file_put_contents($this->filepath.$type.'/'.$id.'_b.txt', $text_b);
+		file_put_contents($this->filepath.$type.'/a/'.$id, $text_a);
+		file_put_contents($this->filepath.$type.'/b/'.$id, $text_b);
 		return $id;
 	}
 
