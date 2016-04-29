@@ -38,6 +38,8 @@ class Database
 		if ($test) {
 			$test = mkdir($this->filepath.$type.'/a', 0777);
 			$test = mkdir($this->filepath.$type.'/b', 0777);
+			$test = mkdir($this->filepath.$type.'/changed', 0777);
+			$test = mkdir($this->filepath.$type.'/deleted', 0777);
 			$this->types[]=$type;
 			$this->fields_a[$type] = [];
 		} else {
@@ -165,8 +167,11 @@ class Database
 	function delete_item($type, $id){
 		if (!$this->is_type($type)) return "requested type unknown";
 		if (!$this->item_exists($type, $id)) return "could not delete object";
+		$lines_a = file($this->filepath.$type.'/a/'.$id);
+		$lines_b = file($this->filepath.$type.'/b/'.$id);
 		$test = unlink($this->filepath.$type."/a/".$id);
 		if(!$test) return "could not remove file /a/".$id;
+		file_put_contents($this->filepath.$type.'/deleted/'.$id, implode("", $lines_a)."".implode("\n",$lines_b));
 		$test = unlink($this->filepath.$type."/b/".$id);
 		return "";
 	}
@@ -182,7 +187,7 @@ class Database
 		if($id && count($fields_b) === 0 ) $fields_b = $this->fields_b[$asset][$id];
 		if(!in_array($asset, $this->types)) $this->create_type($asset);
 		if(!$id) $id = $this->next_id($asset);
-		file_put_contents($this->filepath.$asset.'/a/'.$id,"Last update: ".date("Y-m-d-H-i-s")."\n");
+		file_put_contents($this->filepath.$asset.'/a/'.$id,date("Y-m-d-H-i-s")."\n");
 		foreach($fields_a as $key=>$value ){
 			file_put_contents(
 				$this->filepath.$asset.'/a/'.$id, 
@@ -206,7 +211,7 @@ class Database
 		$text_b = $this->encode_line_breaks($text_b);
 		if(!in_array($asset, $this->types)) $this->create_type($asset);
 		if(!$id) $id = $this->next_id($asset);
-		file_put_contents($this->filepath.$asset.'/a/'.$id,"Last update: ".date("Y-m-d-H-i-s")."\n");
+		file_put_contents($this->filepath.$asset.'/a/'.$id,date("Y-m-d-H-i-s")."\n");
 		file_put_contents($this->filepath.$asset.'/a/'.$id, $text_a , FILE_APPEND | LOCK_EX);
 		file_put_contents($this->filepath.$asset.'/b/'.$id, $text_b);
 		$this->select($asset, $id);
@@ -342,27 +347,49 @@ class Database
 		$type=$p["type"];
 		if(!isset($this->schemas[$type]))return false;
 		$id=(int)$p["id"];
+		$current = false;
+		$changes = [];
 		if(!$id) $id = $this->next_id($type);
+		else {
+			$current = $this->get_item($type, $id);
+		}
 		if(!in_array($type, $this->types)) $this->create_type($asset);
 
 		$s = $this->schemas[$type];
 
-		$text_a = "Last update: ".date("Y-m-d-H-i-s")."\n";
+		$text_a = date("Y-m-d-H-i-s")."\n";
 		$text_b = "";
 		foreach($s["fields_a"] as $field=>$field_type){
 			$text_a .= $field."=";
 			if($field_type && $field_type=="checkbox") $value=isset($p[$field])?1:0;
 			else $value=$p[$field];
 			$text_a .= $value."\n";
+			if(!isset($current[$field]) && $value) $changes[]="+ added field $field with value '".htmlentities($value)."'";
+			else if(isset($current[$field]) && $current[$field]!=$value) $changes[]="* changed field $field with from '".htmlentities($current[$field])."' to '".htmlentities($value)."'";
+			unset($current[$field]);
 		}
 		foreach($s["fields_b"] as $field=>$field_type){
 			$text_b .= $field."=";
 			if($field_type && $field_type=="checkbox") $value=isset($p[$field])?1:0;
 			else $value=$p[$field];
+			if(!isset($current[$field]) && $value) $changes[]="+ added field $field with value '".htmlentities($value)."'";
+			else if(isset($current[$field]) && $current[$field]!=$value) $changes[]="* changed field $field with from '".htmlentities($current[$field])."' to '".htmlentities($value)."'";
+			unset($current[$field]);
 			$text_b .= q_enc($value)."\n";
+		}
+
+		foreach($current as $key=>$value) if(substr($key,-2)!=="__"){
+			$changes[] = "- removed field: $key = $value";
 		}
 		file_put_contents($this->filepath.$type.'/a/'.$id, $text_a);
 		file_put_contents($this->filepath.$type.'/b/'.$id, $text_b);
+		
+		if (count($changes)){
+			file_put_contents($this->filepath.$type.'/changes/'.$id,"::::".date("Y-m-d-H-i-s")."\n", FILE_APPEND | LOCK_EX);
+			foreach($changes as $line) {
+				file_put_contents($this->filepath.$type.'/changes/'.$id,$line."\n", FILE_APPEND | LOCK_EX);
+			}
+		}
 		return $id;
 	}
 
@@ -373,13 +400,13 @@ class Database
 		if ($specs =="date") return "<input type=date size=15 name='$name' value='$value'>";
 		if ($specs=="textarea") return "<textarea name='$name' rows=8 cols=100>$value</textarea>";
 		if ($specs=="checkbox") return "<input type=checkbox name='$name' id='cb_$name' ".($value==1?"checked":"")."><label for='cb_$name'>$name</label>";
-		else {
+		else { 
 			if(!$this->full_index_exists($specs)) $this->load_full_index([$specs]);
 			$txt="<select name='$name'>";
 			$items = $this->full_index[$specs];
 			usort($items, "cmp2");
 			foreach($items as $item){
-				$txt.="<option value='".$item[0]."' ".($item[0]===$value?"selected":"").">".$item[2]."</option>";
+				$txt.="<option value='".$item[0]."' ".($item[0]==$value?"selected":"").">".$item[2]."</option>";
 			}
 			$txt.="</select>";
 			return $txt;
