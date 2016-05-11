@@ -82,7 +82,11 @@ class Database
 				for($i=1;$i<count($lines_a);$i++) {
 					$temp = splitter($lines_a[$i]);
 					$this->fields_a[$type][$s_id][$temp[0]]=trim($temp[1]);
-					$label = $this->read_associated_label($schema["fields_a"][$temp[0]], (int)$temp[1]);
+					if (isset($schema["fields_a"][$temp[0]])) {
+						$label = $this->read_associated_label($schema["fields_a"][$temp[0]], (int)$temp[1]);
+					} else {
+						$label="";
+					}
 					if($label)$this->fields_a[$type][$s_id][$temp[0]."__"]=$label;
 				}
 				for($i=0;$i<count($lines_b);$i++) {
@@ -306,7 +310,7 @@ class Database
 		$this->schemas[$type]=$temp;
 	}
 
-	function edit_form($type, $id=0){
+	function edit_form($type, $id=0){  
 		if(!isset($this->schemas[$type]))return;
 		if(!in_array($type, $this->types)) $this->create_type($asset);
 		$s = $this->schemas[$type];
@@ -315,7 +319,9 @@ class Database
 			$id = 0;
 			$title = "new $type";
 		} else {
-			$f = array_keys($s["fields_a"])[0];
+			$keys_a = array_keys($s["fields_a"]);
+			$keys_b = array_keys($s["fields_b"]);
+			$f = $keys_a[0];
 			$title = $item[$f];
 		}
 		echo "<form method='POST'><table>";
@@ -325,15 +331,30 @@ class Database
 		echo "<tr><td colspan=2 class=header><b>$title </b>($type  <u style=''>$id</u>)</td></tr>";
 		echo "<tr><td colspan=2><hr></td></tr>";
 		foreach($s["fields_a"] as $field=>$field_type){
+			$keys_a = remove_element_by_value($keys_a, $field);
 			echo "<tr><td>".$field."</td><td>";
 			echo $this->add_edit_field($field, $field_type, isset($item[$field])?$item[$field]:"");
 			echo "</td></tr>";
 		}
 		echo "<tr><td colspan=2><hr></td></tr>";
 		foreach($s["fields_b"] as $field=>$field_type){
+			$keys_b = remove_element_by_value($keys_b, $field);
 			echo "<tr><td>".$field."</td><td>";
 			echo $this->add_edit_field($field, $field_type, isset($item[$field])?$item[$field]:"");
 			echo "</td></tr>";
+		}
+		if (count($keys_a) || count($keys_b)){
+			echo '<tr><td colspan=2><hr></td></tr>';
+			foreach($keys_a as $k){
+				echo '<tr><td>'.$k.'</td><td>';
+				echo $this->add_edit_field($k, '',  isset($item[$field])?$item[$field]:"");
+				echo '</td></tr>';
+			}
+			foreach($keys_b as $k){
+				echo '<tr><td>'.$k.'</td><td>';
+				echo $this->add_edit_field($k, '',  isset($item[$field])?$item[$field]:"");
+				echo '</td></tr>';
+			}
 		}
 		echo "<tr><td>&nbsp;</td><td><input type=submit value=save end_action='close'> | ";
 		echo "<input type=button value=cancel end_action='close'></td></tr>";
@@ -471,4 +492,6 @@ function q_enc($t){
 function q_dec($t){
 	return stripslashes(urldecode($t));
 }
-
+function remove_element_by_value($array, $value){
+	return array_diff($array, [$value]);
+}
