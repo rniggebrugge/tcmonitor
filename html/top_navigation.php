@@ -47,4 +47,3 @@ if($authLevel==10) {
 
 
 ?>
-<hr>

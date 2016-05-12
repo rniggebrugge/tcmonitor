@@ -38,6 +38,7 @@ session_start();
         require("./source/security.php");
         if ($authLevel>0 && $country>0) {
                 require("./html/top_navigation.php");
+        echo "</div>";
         // router for authorized visitors
                 switch (SHORTURI) {
                         case "./admintool": if ($authLevel<10) break;

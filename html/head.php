@@ -10,6 +10,6 @@
 <link rel="stylesheet" href="/tcmonitor/styles/general.css" type="text/css" media="screen" />
 </head>
 <body>
+<div id='header_div'>
 <h1>Tools Correspondents Interact</h1>
-<hr>
 

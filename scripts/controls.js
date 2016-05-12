@@ -54,7 +54,7 @@ function createTable(table, data, cells, actions){
 		if(actions!==false){
 			td=$("<td></td>");
 			for(field in actions){
-				button = $("<button style='width:100px; margin-right:10px'>"+field+"</button>");
+				button = $("<button style='margin-right:10px'>"+field+"</button>");
 				button.click(actions[field]);
 				td.append(button);
 				w+=120;
