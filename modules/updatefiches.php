@@ -1,15 +1,17 @@
 <table id="list">
 <tr>
 <!-- <td sort=id >id<br><input type=text filter="id" size="3"></td> -->
-<td DDsort=country__ >country<br><input type=text filter="country__"></td>
-<td DDsort=number style="width:120px">number<br><input type=text filter="number" size="8"></td>
-<td DDsort=title>title<br><input type=text filter="title"></td>
-<td DDsort=status>status<br><input type=text filter="status"></td>
+<td sort=country__ >country<br><input type=text filter="country__" size="8"></td>
+<td sort=number style="width:120px">number<br><input type=text filter="number" size="5"></td>
+<td sort=title>title<br><input type=text filter="title" size="40"></td>
+<td sort=status>status<br><input type=text filter="status" size="8"></td>
+<td sort=last_update>update<br><input type=text filter="last_update" size="8"></td>
 <td clearfilters>X</td></tr></table>
 <style>
 tr.hide_row { display:none;}
 </style>
 <script>
+var active_type = "status_fiche";
 
 $(function(){
 	show_waiting();
@@ -32,7 +34,7 @@ $(function(){
 				status.number=instruments[status.fiche][1];
 				return status
 			});
-			createTable($("#list"), data_status, ["country", "number","title", "status"], {"update":updateMe, "delete":deleteMe});
+			createTable($("#list"), data_status, ["country", "number","title", "status", "last_update"], {"update":updateMe, "delete":deleteMe});
 			remove_waiting();
 		});
 	});

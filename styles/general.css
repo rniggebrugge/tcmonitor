@@ -14,6 +14,7 @@ table { border-collapse: collapse; }
 table td { padding:4px 10px; border:1px solid #06d; vertical-align: top; 
  font-size:13px; }
 table td.header { background:#006; color:#9cf; font-size: 14px; padding:4px 10px;}
+table td.update_date { color:#339; font-size: 9px; margin-left:8px; min-width: 100px}
 table td span.id { color:#339; font-size: 9px; margin-left:8px;}
 table tr { background: #ff9; color:#009;}
 div.header { background:#006; color:#9cf; cursor: pointer; margin:20px 0 10px; padding:4px 10px;}

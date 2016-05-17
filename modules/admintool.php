@@ -12,8 +12,6 @@ foreach($db->types as $type) {
 				</td><tr>";
 	}
 	echo "</table></div>";
-	echo "<div id='mask_all'></div><iframe frameborder='0' hspace='0' id='edit_iframe' style='width:1030px; height:600px; 
-		position:fixed; left:50%; top:50%; margin-left:-515px; margin-top:-315px; display:none'></iframe>";
 }
 
 ?>
@@ -45,9 +43,5 @@ $(function(){
 		return false;
 	});
 
-	function edit_item(type, id){
-		$("#mask_all").show();
-		$("#edit_iframe").show().attr("src", "/tcmonitor/edit_form.php?type="+type+"&id="+id);
-	}
 });
 </script>

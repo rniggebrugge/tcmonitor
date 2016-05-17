@@ -8,6 +8,8 @@
 tr.hide_row { display:none;}
 </style>
 <script>
+var active_type = "contact_point";
+
 $(function(){
 	show_waiting();
 	var request_url="/tcmonitor/communication/contact_point/items/<?php echo $country!=99999?'country='.$country:'';?>";

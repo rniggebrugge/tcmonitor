@@ -45,7 +45,6 @@ function addHoverClass(){
 function removeHoverClass(){
 	$(this).removeClass("hover_row");
 }
-
 function createTable(table, data, cells, actions){
 	data.forEach(function(item){
 		var tr=$("<tr></tr>"), td, field, button, w = 0;
@@ -53,10 +52,12 @@ function createTable(table, data, cells, actions){
 		for(field in item) tr.attr("data-"+field,item[field]);
 		for(field in cells){
 			if(cells[field]=="country"){
-				td = $("<td><img src='http://www.ejnforum.eu/cp/uploaded_content/spacer.png' class='flag_sprite' style='background-position:"+flags_pos[item.country]+"'>"+ item.country__+"</td>");
+				td = $("<td style='width:160px'><img src='http://www.ejnforum.eu/cp/uploaded_content/spacer.png' class='flag_sprite' style='background-position:"+flags_pos[item.country]+"'>"+ item.country__+"</td>");
 			} else if (cells[field]=="EMPTY") {
 				td=$("<td>&nbsp;</td>");
-			}else {
+			} else if (cells[field]=="last_update") {
+				td=$("<td class=update_date>"+item["last_update"]+"</td>");
+			} else {
 				td=$("<td>"+item[cells[field]]+"</td>");
 			}
 			if(cells[field]=="title") {
@@ -79,10 +80,20 @@ function createTable(table, data, cells, actions){
 	});
 }
 
+function edit_item(type, id){ 
+	$("#mask_all").show();
+	$("#edit_iframe").show().attr("src", "/tcmonitor/edit_form.php?type="+type+"&id="+id);
+}
 function updateMe(){
-	alert($(this).parent().html());
+	var id = $(this).parents("tr").attr("data-id");
+	edit_item(active_type, id);
 }
 function deleteMe(){
-	alert($(this).closest("tr").attr("data-title"));
+	var id = $(this).parents("tr").attr("data-id");
+	if(!confirm("Delete "+active_type+" "+id+"?"))return;
+	$.post("/tcmonitor/delete/"+active_type+"/"+id, function(data){
+		if(data && data!=="") alert(data);
+	});
+	$(this).parents("tr").remove();
 }
 

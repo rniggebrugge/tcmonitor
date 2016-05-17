@@ -89,6 +89,7 @@ class Database
 					}
 					if($label)$this->fields_a[$type][$s_id][$temp[0]."__"]=$label;
 				}
+				$this->fields_a[$type][$s_id]["last_update"]=human_date($lines_a[0]);
 				for($i=0;$i<count($lines_b);$i++) {
 					$temp  = splitter($lines_b[$i]);
 					$this->fields_b[$type][$s_id][$temp[0]]=trim(q_dec($temp[1]));
@@ -494,4 +495,8 @@ function q_dec($t){
 }
 function remove_element_by_value($array, $value){
 	return array_diff($array, [$value]);
+}
+function human_date($date){
+	$t = explode("-", $date);
+	return $t[0]."/".$t[1]."/".$t[2]." at ".$t[3].":".$t[4].":".$t[5];
 }
