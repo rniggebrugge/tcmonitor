@@ -11,6 +11,7 @@ $(function(){
 	$("input[filter").click(function(){return false}).change(updateFilter)
 
 	 function updateFilter(){ 
+	 	show_waiting();
 		$("#list tr:gt(0)").each(function(){
 			var visible=true, $tr=$(this);
 			$("input[filter").each(function(){
@@ -22,8 +23,17 @@ $(function(){
 			if(!visible) $(this).addClass("hide_row");
 			else $(this).removeClass("hide_row");
 		});
+		remove_waiting();
 	}
 });
+
+function show_waiting(){
+	$("#veil").css({opacity:0.6}).show();
+}
+
+function remove_waiting(){
+	$("#veil").hide();
+}
 
 function addHover(tr){
 	tr.hover(function(){$(this).css({background:"#09f"})}, function(){$(this).css({background:"#fff"})})
@@ -48,6 +58,9 @@ function createTable(table, data, cells, actions){
 				td=$("<td>&nbsp;</td>");
 			}else {
 				td=$("<td>"+item[cells[field]]+"</td>");
+			}
+			if(cells[field]=="title") {
+				td.append($("<span class=id>("+item["id"]+")</span>"));
 			}
 			tr.append(td);
 		}

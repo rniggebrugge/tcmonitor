@@ -12,6 +12,7 @@ tr.hide_row { display:none;}
 </style>
 <script>
 $(function(){
+	show_waiting();
 	var request_url="/tcmonitor/communication/legal_instrument/items";
 	$.post(request_url, function(data_instrument){
 		data_instrument = $.parseJSON(data_instrument);
@@ -32,8 +33,8 @@ $(function(){
 				status.reference=instruments[status.legal_instrument][1];
 				return status
 			});
-			console.log(data_status[0])
 			createTable($("#list"), data_status, ["country", "reference","title"], {"update":updateMe, "delete":deleteMe});
+			remove_waiting();
 		});
 	});
 });

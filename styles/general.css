@@ -1,5 +1,9 @@
 body { background:#999 ; margin:120px 0 0 0;}
 * {font-family: Arial;}
+#veil {
+	position: fixed; left:0; top:0; right:0; bottom:0;
+	background: #000; display: none;
+}
 button, input[type="button"] { cursor: pointer; border:0; background:#666; color:#fff; font-weight:bold;
 	border-radius: 2px; text-align: center; padding:2px 0; width: 70px}
 a { color:#009; text-decoration:none; font-size: 14px}
@@ -10,6 +14,7 @@ table { border-collapse: collapse; }
 table td { padding:4px 10px; border:1px solid #06d; vertical-align: top; 
  font-size:13px; }
 table td.header { background:#006; color:#9cf; font-size: 14px; padding:4px 10px;}
+table td span.id { color:#339; font-size: 9px; margin-left:8px;}
 table tr { background: #ff9; color:#009;}
 div.header { background:#006; color:#9cf; cursor: pointer; margin:20px 0 10px; padding:4px 10px;}
 div.header input { margin:4px 10px 4px 10px;}
