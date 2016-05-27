@@ -53,6 +53,9 @@ session_start();
                         case "./dbschema": if ($authLevel<10) break;
                                 require("./modules/dbschema.php");
                                 break;
+                        case "./infoabout": 
+                                require("./modules/updateinfo.php");
+                                break;
                         case "./contacts":
                                 require("./modules/updatecontacts.php");
                                 break;
