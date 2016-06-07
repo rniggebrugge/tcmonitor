@@ -47,6 +47,9 @@ function removeHoverClass(){
 }
 function createTable(table, data, cells, actions){
 	data.forEach(function(item){
+		// work around:
+		// var flags_pos = [];
+		// flags_pos[item.country]='';
 		var tr=$("<tr></tr>"), td, field, button, w = 0;
 		tr.hover(addHoverClass, removeHoverClass)
 		for(field in item) tr.attr("data-"+field,item[field]);
